@@ -1,0 +1,17 @@
+# Core LangChain and LangGraph
+langchain>=1.0.0
+langchain-core>=1.0.0
+langgraph>=1.0.0
+langchain-google-genai>=2.0.0
+
+# Google Generative AI
+google-generativeai
+
+# Environment variables
+python-dotenv
+
+# Pydantic for data validation
+pydantic
+
+# Optional but recommended for better performance
+typing-extensions
