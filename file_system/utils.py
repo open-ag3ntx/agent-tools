@@ -5,6 +5,11 @@ async def get_file_type(file_path: str) -> str:
     """
     Get the type of a file based on its extension.
     """
+    # check if the file is a directory
+    if os.path.isdir(file_path):
+        return "directory"
+
+    # get the extension of the file
     extension = os.path.splitext(file_path)[1].lower()
 
     if extension in [".svg", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".webp"]:

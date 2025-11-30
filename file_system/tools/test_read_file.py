@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from file_system.read_file import read_file, ReadFileResult, FILE_SIZE_LIMIT, MAX_LENGTH_OF_LINE
+from file_system.tools.read_file import read_file, ReadFileResult, MAX_LENGTH_OF_LINE
 from file_system import settings as settings_module
 
 
