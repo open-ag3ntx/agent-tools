@@ -14,7 +14,10 @@ async def get_file_type(file_path: str) -> str:
 
     if extension in [".svg", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".webp"]:
         return "image"
-
+    
+    if extension in [".ts", ".mts", ".cts"]:
+        return "text"
+    
     mime_type = mimetypes.guess_type(file_path)[0]
     
     # If the mime type is not None, return the type of the file

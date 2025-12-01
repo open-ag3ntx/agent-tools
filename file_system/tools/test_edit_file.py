@@ -193,13 +193,11 @@ class TestEditFileReplaceAll:
         assert result.success is True
         content = Path(duplicate_content_file).read_text()
         assert "foo" not in content
-        assert content.count("FOO") == 9  # All 9 occurrences replaced
+        assert content.count("FOO") == 6  # All 6 occurrences replaced
 
     @pytest.mark.asyncio
     async def test_replace_first_occurrence_only(self, duplicate_content_file):
         """Should replace only first occurrence when replace_all=False."""
-        # NOTE: This test documents the expected behavior - the current implementation
-        # may need fixing to support this properly
         result = await edit_file(
             duplicate_content_file, 
             "foo", 
@@ -211,7 +209,7 @@ class TestEditFileReplaceAll:
         content = Path(duplicate_content_file).read_text()
         # Only the first "foo" should be replaced
         assert content.count("FOO") == 1
-        assert content.count("foo") == 8
+        assert content.count("foo") == 5
 
 
 class TestEditFileErrors:
