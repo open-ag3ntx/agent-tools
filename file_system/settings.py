@@ -9,5 +9,9 @@ class FileSystemSettings(BaseSettings):
     # present working directory of the user
     present_working_directory: str = os.getcwd()
 
+    # present test directory
+    os.makedirs(f"{present_working_directory}/test", exist_ok=True)
+    present_test_directory: str = f"{present_working_directory}/test"
+
 
 settings = FileSystemSettings()

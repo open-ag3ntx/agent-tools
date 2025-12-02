@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated, Literal
 from pydantic import BaseModel
 from langchain_core.tools import tool
@@ -9,7 +10,7 @@ class TodoItem(BaseModel):
     title: str
     status: Literal["pending", "completed", "cancelled"] = "pending"
 
-todo_store: dict[str, dict[int, TodoItem]] = {}
+todo_store: dict[str, dict[int, TodoItem]] = asyncio.Lock()
 
 @tool
 def create_todo(

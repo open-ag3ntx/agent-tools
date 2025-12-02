@@ -27,14 +27,14 @@ Use todos for any task with 3+ steps or tasks that take significant time to comp
 
 ## Key Rules
 
-✅ Create all todos BEFORE starting work
-✅ Update todos IMMEDIATELY after completing each step
-✅ Use clear, action-oriented titles ("Set up Tailwind CSS" not "Tailwind")
-✅ Use consistent workflow names for related todos
+Create all todos BEFORE starting work
+Update todos IMMEDIATELY after completing each step
+Use clear, action-oriented titles ("Set up Tailwind CSS" not "Tailwind")
+Use consistent workflow names for related todo
 
-❌ Don't skip todo creation for multi-step tasks
-❌ Don't forget to update todos as you progress
-❌ Don't use delete for marking work done (use update_todo instead)
+Don't skip todo creation for multi-step tasks
+Don't forget to update todos as you progress
+Don't use delete for marking work done (use update_todo instead)
 
 ## Example
 

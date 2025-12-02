@@ -73,11 +73,11 @@ class TestReadFileSuccess:
 
     @pytest.mark.asyncio
     async def test_read_empty_file(self, empty_file):
-        """Should handle empty files."""
+        """Should handle empty files with a helpful message."""
         result = await read_file(empty_file)
         
         assert result.success is True
-        assert result.content == ""
+        assert result.content == "This file is empty"
 
     @pytest.mark.asyncio
     async def test_read_with_offset(self, many_lines_file):
@@ -121,8 +121,12 @@ class TestReadFileTruncation:
         lines = result.content.split("\n")
         
         # The long line should be truncated
+        # Format is "{line_num}: {content}... truncated"
+        # Line 2 has format "2: xxx...truncated"
         long_line = lines[1]
-        assert len(long_line) <= MAX_LENGTH_OF_LINE + len("... truncated")
+        line_number_prefix_len = len("2: ")  # Line number prefix for second line
+        max_total_len = line_number_prefix_len + MAX_LENGTH_OF_LINE + len("... truncated")
+        assert len(long_line) <= max_total_len
         assert "... truncated" in long_line
 
     @pytest.mark.asyncio
