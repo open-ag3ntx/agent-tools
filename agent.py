@@ -2,17 +2,14 @@ import datetime
 from langchain.agents import create_agent
 from langchain_core.prompts import PromptTemplate, prompt
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from dotenv import load_dotenv
 import os
 
-try:
-    from rich.console import Console
-    from rich.markdown import Markdown
-    RICH_AVAILABLE = True
-    console = Console()
-except ImportError:
-    RICH_AVAILABLE = False
+from rich.console import Console
+from rich.markdown import Markdown
+console = Console()
 
 from file_system.settings import settings as file_system_settings
 from file_system.tools.write_file import write_file
@@ -46,12 +43,12 @@ tools = [
 def create_prompt():
     prompt_template = PromptTemplate.from_template(
         """{agent_prompt}
+
+        {todo_prompt}
         
         {file_system_prompt}
         
         {command_line_prompt}
-        
-        {todo_prompt}
         
         Information about the environment you are working in:
         Current directory: {current_directory}
@@ -114,17 +111,17 @@ def print_message(msg):
                 for block in content:
                     if isinstance(block, dict) and block.get('type') == 'text':
                         text = block.get('text', '')
-                        if RICH_AVAILABLE and text:
+                        if text:
                             console.print(Markdown(text))
                         elif text:
                             print(text)
                     elif isinstance(block, str):
-                        if RICH_AVAILABLE:
+                        if text:
                             console.print(Markdown(block))
                         else:
                             print(block)
             elif isinstance(content, str) and content:
-                if RICH_AVAILABLE:
+                if content:
                     console.print(Markdown(content))
                 else:
                     print(content)

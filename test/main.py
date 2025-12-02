@@ -3,7 +3,14 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Optional
-from database import init_db, get_db_connection
+from database import init_db, get_db_connection, DATABASE_NAME
+import os
+
+# Conditional database initialization for testing
+if os.environ.get("TESTING"):
+    from test_main import get_test_db_connection as get_db_connection
+    from test_main import init_test_db as init_db
+    DATABASE_NAME = "test_server.db"
 import sqlite3
 from auth import get_password_hash, verify_password, create_access_token, verify_token
 
