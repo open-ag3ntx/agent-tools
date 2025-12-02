@@ -15,3 +15,6 @@ pydantic
 
 # Optional but recommended for better performance
 typing-extensions
+
+# Rich for terminal markdown formatting
+rich

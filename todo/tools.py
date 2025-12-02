@@ -1,4 +1,3 @@
-import asyncio
 from typing import Annotated, Literal
 from pydantic import BaseModel
 from langchain_core.tools import tool
@@ -10,7 +9,19 @@ class TodoItem(BaseModel):
     title: str
     status: Literal["pending", "completed", "cancelled"] = "pending"
 
-todo_store: dict[str, dict[int, TodoItem]] = asyncio.Lock()
+# Store todos keyed by task_group -> id -> TodoItem
+todo_store: dict[str, dict[int, TodoItem]] = {}
+# Track next ID per task_group (persists across deletions)
+_id_counter: dict[str, int] = {}
+
+
+def _get_next_id(task_group: str) -> int:
+    """Get the next available ID for a task group."""
+    if task_group not in _id_counter:
+        _id_counter[task_group] = 0
+    _id_counter[task_group] += 1
+    return _id_counter[task_group]
+
 
 @tool
 def create_todo(
@@ -37,7 +48,7 @@ def create_todo(
         task_group: The task_group or workflow name this todo belongs to (e.g., 'data-pipeline-2024')
     
     Returns:
-        Confirmation message that the todo was created successfully
+        Confirmation message with the todo ID
     
     Example usage:
         When starting a data analysis task, first create todos for:
@@ -49,13 +60,14 @@ def create_todo(
     if task_group not in todo_store:
         todo_store[task_group] = {}
 
-    todo_store[task_group][title] = TodoItem(
-        id=len(todo_store[task_group]) + 1,
+    todo_id = _get_next_id(task_group)
+    todo_store[task_group][todo_id] = TodoItem(
+        id=todo_id,
         title=title,
         task_group=task_group,
         status="pending"
     )
-    return f'Todo created successfully'
+    return f'Todo created successfully with ID {todo_id}'
 
 @tool
 def list_todos(task_group: Annotated[str, "The task_group of the todo item"]) -> str:
