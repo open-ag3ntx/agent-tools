@@ -1,7 +1,7 @@
 import os
-from file_system.settings import settings
-from file_system.models import BaseToolResult
-from file_system.utils import get_file_type, write_file_content
+from base.settings import settings
+from base.models import BaseToolResult
+from base.utils import get_file_type, write_file_content
 from typing import Annotated, Optional
 
 class WriteFileResult(BaseToolResult):

@@ -10,8 +10,9 @@ from command_line.tools.execute_command import (
     is_command_dangerous,
     is_directory_allowed,
 )
-from command_line.models import CommandResult
-from command_line import settings as settings_module
+from base.models import CommandResult
+
+from base.settings import settings as settings_module
 
 
 @pytest.fixture
@@ -19,9 +20,8 @@ def temp_dir():
     """Create a temporary directory for test commands."""
     with tempfile.TemporaryDirectory() as tmpdir:
         # Patch settings to allow the temp directory
-        with patch.object(settings_module.settings, 'present_working_directory', tmpdir):
-            with patch.object(settings_module.settings, 'allowed_directories', [tmpdir, '/tmp']):
-                with patch.object(settings_module.settings, 'working_directory', tmpdir):
+        with patch.object(settings_module, 'present_working_directory', tmpdir):
+            with patch.object(settings_module, 'allowed_directories', [tmpdir, '/tmp']):
                     yield Path(tmpdir)
 
 
@@ -174,16 +174,16 @@ class TestDirectoryRestrictions:
 
     def test_allowed_directory_check(self, temp_dir):
         """Should check directory allowlist."""
-        with patch.object(settings_module.settings, 'present_working_directory', str(temp_dir)):
-            with patch.object(settings_module.settings, 'allowed_directories', [str(temp_dir)]):
+        with patch.object(settings_module, 'present_working_directory', str(temp_dir)):
+            with patch.object(settings_module, 'allowed_directories', [str(temp_dir)]):
                 assert is_directory_allowed(str(temp_dir)) is True
                 assert is_directory_allowed("/some/other/path") is False
 
     @pytest.mark.asyncio
     async def test_disallowed_directory_rejected(self):
         """Should reject commands in disallowed directories."""
-        with patch.object(settings_module.settings, 'present_working_directory', '/tmp'):
-            with patch.object(settings_module.settings, 'allowed_directories', ['/tmp']):
+        with patch.object(settings_module, 'present_working_directory', '/tmp'):
+            with patch.object(settings_module, 'allowed_directories', ['/tmp']):
                 result = await execute_command("echo test", working_directory="/var/log")
                 
                 assert result.success is False

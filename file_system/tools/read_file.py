@@ -1,9 +1,9 @@
 from typing import Annotated, Optional
 import os
 
-from file_system.settings import settings
-from file_system.utils import get_file_type, read_file_content
-from file_system.models import BaseToolResult
+from base.settings import settings
+from base.utils import get_file_type, read_file_content
+from base.models import BaseToolResult
 
 class ReadFileResult(BaseToolResult):
     content: Optional[str] = None

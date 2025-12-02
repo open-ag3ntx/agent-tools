@@ -3,8 +3,8 @@ import os
 import shlex
 from typing import Annotated, Optional
 
-from command_line.settings import settings
-from command_line.models import CommandResult
+from base.settings import settings
+from base.models import CommandResult
 
 
 def is_command_blocked(command: str) -> bool:

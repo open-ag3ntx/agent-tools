@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from file_system.tools.edit_file import edit_file, EditFileResult
-from file_system import settings as settings_module
+import base.settings as settings_module
 
 
 @pytest.fixture

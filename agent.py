@@ -11,15 +11,14 @@ from rich.console import Console
 from rich.markdown import Markdown
 console = Console()
 
-from file_system.settings import settings as file_system_settings
+from base.settings import settings as file_system_settings
 from file_system.tools.write_file import write_file
 from file_system.tools.read_file import read_file
 from file_system.tools.edit_file import edit_file
 from todo.tools import list_todos
 from todo.tools import update_todo
-from todo.tools import delete_todo
 from todo.tools import create_todo
-from command_line.tools.execute_command import execute_command
+from command_line.tools import execute_command
 
 load_dotenv()
 
@@ -36,7 +35,6 @@ tools = [
     create_todo,
     list_todos,
     update_todo,
-    delete_todo,
     execute_command,
 ]
 

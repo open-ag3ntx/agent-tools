@@ -8,10 +8,10 @@ Use todos for any task with 3+ steps or tasks that take significant time to comp
 - Multi-step coding projects
 - Data processing pipelines
 - Research and analysis tasks
-- Deployment workflows
+- Deployment task_groups
 - Any sequential process where tracking matters
 
-## Workflow
+## task_group
 
 1. **Plan**: Break down the task and create todos for each major step
 2. **Execute**: Work through todos one by one
@@ -20,17 +20,17 @@ Use todos for any task with 3+ steps or tasks that take significant time to comp
 
 ## Tool Usage
 
-- `create_todo(title, workflow)` - Create a step at the start of work
-- `list_todos(workflow)` - Check what's pending/completed
-- `update_todo(workflow, todo_id, status)` - Mark as "completed" or "cancelled" 
-- `delete_todo(workflow, title)` - Only for correcting mistakes
+- `create_todo(title, task_group)` - Create a step at the start of work
+- `list_todos(task_group)` - Check what's pending/completed
+- `update_todo(task_group, todo_id, status)` - Mark as "completed" or "cancelled" 
+- `delete_todo(task_group, title)` - Only for correcting mistakes
 
 ## Key Rules
 
 Create all todos BEFORE starting work
 Update todos IMMEDIATELY after completing each step
 Use clear, action-oriented titles ("Set up Tailwind CSS" not "Tailwind")
-Use consistent workflow names for related todo
+Use consistent task_group names for related todo
 
 Don't skip todo creation for multi-step tasks
 Don't forget to update todos as you progress
@@ -52,4 +52,4 @@ Don't use delete for marking work done (use update_todo instead)
 3. List todos to verify all are completed
 ```
 
-Use todos to stay organized and ensure no steps are missed in complex workflows.
+Use todos to stay organized and ensure no steps are missed in complex task_groups.

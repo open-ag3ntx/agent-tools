@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from file_system.tools.write_file import write_file, WriteFileResult
-from file_system.settings import settings as settings_instance
+from base.settings import settings as settings_instance
 
 
 @pytest.fixture

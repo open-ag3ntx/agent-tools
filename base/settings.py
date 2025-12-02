@@ -3,18 +3,13 @@ from pydantic_settings import BaseSettings
 from typing import List
 
 
-class CommandLineSettings(BaseSettings):
+class Settings(BaseSettings):
     # Default timeout for commands (in seconds)
     default_timeout: int = 60
     
     # Maximum timeout allowed
     max_timeout: int = 300
     
-    # Present working directory (project root)
-    present_working_directory: str = os.getcwd()
-    
-    # Working directory for command execution
-    working_directory: str = f"{os.getcwd()}/test"
     
     # Allowed directories for command execution
     allowed_directories: List[str] = [f"{os.getcwd()}/test", "/tmp"]
@@ -47,6 +42,18 @@ class CommandLineSettings(BaseSettings):
         "init ",
     ]
 
+    file_size_limit: int = 10 * 1024 * 1024 # 100MB
+    max_lines_to_read: int = 2000
+    max_length_of_line: int = 2000
 
-settings = CommandLineSettings()
+    # present working directory of the user
+    present_working_directory: str = os.getcwd()
+
+    # present test directory
+    os.makedirs(f"{present_working_directory}/test", exist_ok=True)
+    present_test_directory: str = f"{present_working_directory}/test"
+
+
+
+settings = Settings()
 
