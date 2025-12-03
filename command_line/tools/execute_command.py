@@ -61,7 +61,7 @@ async def execute_command(
     try:
         # Validate and set working directory
         if working_directory is None:
-            working_directory = settings.working_directory
+            working_directory = settings.present_test_directory
         
         # Ensure working directory exists
         if not os.path.exists(working_directory):
@@ -156,6 +156,6 @@ async def execute_command(
             success=False,
             error=f"Error executing command: {str(e)}",
             command=command,
-            working_directory=working_directory if working_directory else settings.working_directory
+            working_directory=working_directory if working_directory else settings.present_test_directory
         )
 
