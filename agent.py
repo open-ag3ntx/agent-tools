@@ -18,7 +18,7 @@ from file_system.tools.edit_file import edit_file
 from todo.tools import list_todos
 from todo.tools import update_todo
 from todo.tools import create_todo
-from command_line.tools import execute_command
+from bash.tools import bash
 
 load_dotenv()
 
@@ -35,7 +35,7 @@ tools = [
     create_todo,
     list_todos,
     update_todo,
-    execute_command,
+    bash,
 ]
 
 def create_prompt():

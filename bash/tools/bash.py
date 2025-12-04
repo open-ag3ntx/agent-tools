@@ -111,7 +111,7 @@ async def bash(
     """
     try:
         # Determine the working directory
-        cwd = working_directory or settings.present_working_directory
+        cwd = working_directory or settings.present_test_directory
         
         # Validate working directory
         if not os.path.exists(cwd):

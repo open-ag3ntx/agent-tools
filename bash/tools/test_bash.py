@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 from base import bash_utils
-from command_line.tools.bash import bash
+from bash.tools.bash import bash
 from base.models import CommandResult
 
 
