@@ -1,19 +1,32 @@
 # Command Line Tool Guidelines
 
-You have access to a command execution tool that allows you to run shell commands.
+You have access to a command execution tool that allows you to run bash commands.
 
 ## Available Tool
 
-### execute_command
-Execute a shell command and get the output.
+### bash
+Execute a bash command and get the output.
 
 ```
-execute_command(command, working_directory?, timeout?)
+bash(command, description, timeout, run_in_background)
 ```
 
 - `command`: The shell command to execute (required)
-- `working_directory`: Directory to run the command in (optional, defaults to project directory)
+- `description`: Clear, concise description of what this command does in 5-10 words, in active voice. 
+    Examples:
+    Input: ls
+    Output: List files in current directory
+
+    Input: git status
+    Output: Show working tree status
+
+    Input: npm install
+    Output: Install package dependencies
+
+    Input: mkdir foo
+    Output: Create directory 'foo' 
 - `timeout`: Timeout in seconds (optional, default: 60, max: 300)
+- `run_in_background`: Set to true to run this command in the background. Use Returned PID to read the output later.
 
 **Returns**: CommandResult with stdout, stderr, return_code, and success status
 
@@ -34,6 +47,7 @@ Use `execute_command` for:
 - Check command output for errors
 - Use the correct working directory
 - Prefer simple, single-purpose commands
+- 
 
 ### Don'ts
 - Don't run commands that modify system files outside the project

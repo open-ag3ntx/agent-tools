@@ -10,8 +10,9 @@ class CommandResult(BaseModel):
     stderr: Optional[str] = None
     return_code: Optional[int] = None
     command: Optional[str] = None
-    working_directory: Optional[str] = None
     timed_out: bool = False
+    run_in_background: bool = False
+    process_id: Optional[int] = None
 
 class BaseToolResult(BaseModel):
     success: bool = True

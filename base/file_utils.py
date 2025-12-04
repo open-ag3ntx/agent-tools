@@ -122,7 +122,3 @@ async def write_file_content(file_path: str, file_content: str) -> None:
 
     with open(file_path, "w") as file:
         file.write(file_content)
-
-
-if __name__ == "__main__":
-    print(os.getcwd())

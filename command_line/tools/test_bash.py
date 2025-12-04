@@ -4,11 +4,9 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from command_line.tools.execute_command import (
-    execute_command,
-    is_command_blocked,
-    is_command_dangerous,
-    is_directory_allowed,
+from base import bash_utils
+from command_line.tools.bash import (
+    bash,
 )
 from base.models import CommandResult
 
@@ -31,7 +29,7 @@ class TestExecuteCommandSuccess:
     @pytest.mark.asyncio
     async def test_simple_command(self, temp_dir):
         """Should execute a simple command successfully."""
-        result = await execute_command("echo 'Hello, World!'", working_directory=str(temp_dir))
+        result = await bash("echo 'Hello, World!'", description="Test simple command")
         
         assert result.success is True
         assert "Hello, World!" in result.stdout
@@ -44,7 +42,7 @@ class TestExecuteCommandSuccess:
         test_file = temp_dir / "test.txt"
         test_file.write_text("test content")
         
-        result = await execute_command("ls", working_directory=str(temp_dir))
+        result = await bash("ls", description="Test ls command")
         
         assert result.success is True
         assert "test.txt" in result.stdout
@@ -52,7 +50,7 @@ class TestExecuteCommandSuccess:
     @pytest.mark.asyncio
     async def test_pwd_command(self, temp_dir):
         """Should execute pwd in the correct directory."""
-        result = await execute_command("pwd", working_directory=str(temp_dir))
+        result = await bash("pwd", description="Test pwd command")
         
         assert result.success is True
         assert str(temp_dir) in result.stdout
@@ -63,7 +61,7 @@ class TestExecuteCommandSuccess:
         test_file = temp_dir / "test.txt"
         test_file.write_text("file content here")
         
-        result = await execute_command("cat test.txt", working_directory=str(temp_dir))
+        result = await bash("cat test.txt", description="Test cat command")
         
         assert result.success is True
         assert "file content here" in result.stdout
@@ -71,7 +69,7 @@ class TestExecuteCommandSuccess:
     @pytest.mark.asyncio
     async def test_command_with_pipe(self, temp_dir):
         """Should handle piped commands."""
-        result = await execute_command("echo 'line1\nline2\nline3' | wc -l", working_directory=str(temp_dir))
+        result = await bash("echo 'line1\nline2\nline3' | wc -l", description="Test command with pipe")
         
         assert result.success is True
         assert "3" in result.stdout
@@ -79,7 +77,7 @@ class TestExecuteCommandSuccess:
     @pytest.mark.asyncio
     async def test_command_creates_file(self, temp_dir):
         """Should create files via commands."""
-        result = await execute_command("touch new_file.txt", working_directory=str(temp_dir))
+        result = await bash("touch new_file.txt", description="Test command creates file")
         
         assert result.success is True
         assert (temp_dir / "new_file.txt").exists()
@@ -87,7 +85,7 @@ class TestExecuteCommandSuccess:
     @pytest.mark.asyncio
     async def test_python_command(self, temp_dir):
         """Should execute Python commands."""
-        result = await execute_command("python3 -c 'print(1 + 1)'", working_directory=str(temp_dir))
+        result = await bash("python3 -c 'print(1 + 1)'", description="Test python command")
         
         assert result.success is True
         assert "2" in result.stdout
@@ -99,7 +97,7 @@ class TestExecuteCommandErrors:
     @pytest.mark.asyncio
     async def test_command_not_found(self, temp_dir):
         """Should handle command not found."""
-        result = await execute_command("nonexistent_command_xyz", working_directory=str(temp_dir))
+        result = await bash("nonexistent_command_xyz", description="Test command not found")
         
         assert result.success is False
         assert result.return_code != 0
@@ -107,7 +105,7 @@ class TestExecuteCommandErrors:
     @pytest.mark.asyncio
     async def test_command_fails(self, temp_dir):
         """Should handle command failure."""
-        result = await execute_command("ls /nonexistent_directory_xyz", working_directory=str(temp_dir))
+        result = await bash("ls /nonexistent_directory_xyz", description="Test command fails")
         
         assert result.success is False
         assert result.stderr is not None
@@ -115,7 +113,7 @@ class TestExecuteCommandErrors:
     @pytest.mark.asyncio
     async def test_invalid_working_directory(self, temp_dir):
         """Should fail for non-existent working directory."""
-        result = await execute_command("echo test", working_directory="/nonexistent/path")
+        result = await bash("echo test", description="Test invalid working directory")
         
         assert result.success is False
         assert "does not exist" in result.error
@@ -126,7 +124,7 @@ class TestExecuteCommandErrors:
         test_file = temp_dir / "test.txt"
         test_file.write_text("test")
         
-        result = await execute_command("echo test", working_directory=str(test_file))
+        result = await bash("echo test", description="Test file as working directory")
         
         assert result.success is False
         assert "not a directory" in result.error
@@ -137,20 +135,20 @@ class TestCommandBlocking:
 
     def test_blocked_command_detection(self):
         """Should detect blocked commands."""
-        assert is_command_blocked("rm -rf /") is True
-        assert is_command_blocked("rm -rf /*") is True
-        assert is_command_blocked("echo hello") is False
+        assert bash_utils.is_command_blocked("rm -rf /") is True
+        assert bash_utils.is_command_blocked("rm -rf /*") is True
+        assert bash_utils.is_command_blocked("echo hello") is False
 
     def test_dangerous_pattern_detection(self):
         """Should detect dangerous patterns."""
-        assert is_command_dangerous("sudo apt install") == "sudo"
-        assert is_command_dangerous("rm -rf ./node_modules") == "rm -rf"
-        assert is_command_dangerous("echo hello") is None
+        assert bash_utils.is_command_dangerous("sudo apt install") == "sudo"
+        assert bash_utils.is_command_dangerous("rm -rf ./node_modules") == "rm -rf"
+        assert bash_utils.is_command_dangerous("echo hello") is None
 
     @pytest.mark.asyncio
     async def test_blocked_command_rejected(self, temp_dir):
         """Should reject blocked commands."""
-        result = await execute_command("rm -rf /", working_directory=str(temp_dir))
+        result = await bash("rm -rf /", description="Test blocked command")
         
         assert result.success is False
         assert "blocked" in result.error.lower()
@@ -162,7 +160,7 @@ class TestCommandBlocking:
         test_file = temp_dir / "test.txt"
         test_file.write_text("test content")
         
-        result = await execute_command(f"chmod 777 {test_file}", working_directory=str(temp_dir))
+        result = await bash(f"chmod 777 {test_file}", description="Test dangerous command")
         
         # Should execute but with warning in stderr
         assert result.success is True
@@ -176,15 +174,15 @@ class TestDirectoryRestrictions:
         """Should check directory allowlist."""
         with patch.object(settings_module, 'present_working_directory', str(temp_dir)):
             with patch.object(settings_module, 'allowed_directories', [str(temp_dir)]):
-                assert is_directory_allowed(str(temp_dir)) is True
-                assert is_directory_allowed("/some/other/path") is False
+                assert bash_utils.is_directory_allowed(str(temp_dir)) is True
+                assert bash_utils.is_directory_allowed("/some/other/path") is False
 
     @pytest.mark.asyncio
     async def test_disallowed_directory_rejected(self):
         """Should reject commands in disallowed directories."""
         with patch.object(settings_module, 'present_working_directory', '/tmp'):
             with patch.object(settings_module, 'allowed_directories', ['/tmp']):
-                result = await execute_command("echo test", working_directory="/var/log")
+                result = await bash("echo test", description="Test disallowed directory")
                 
                 assert result.success is False
                 assert "not allowed" in result.error
@@ -196,7 +194,7 @@ class TestTimeout:
     @pytest.mark.asyncio
     async def test_command_timeout(self, temp_dir):
         """Should timeout long-running commands."""
-        result = await execute_command("sleep 10", working_directory=str(temp_dir), timeout=1)
+        result = await bash("sleep 10", description="Test command timeout")
         
         assert result.success is False
         assert result.timed_out is True
@@ -205,7 +203,7 @@ class TestTimeout:
     @pytest.mark.asyncio
     async def test_custom_timeout(self, temp_dir):
         """Should respect custom timeout."""
-        result = await execute_command("sleep 1", working_directory=str(temp_dir), timeout=5)
+        result = await bash("sleep 1", description="Test custom timeout")
         
         assert result.success is True
         assert result.timed_out is False
@@ -217,7 +215,7 @@ class TestCommandResult:
     @pytest.mark.asyncio
     async def test_result_contains_all_fields(self, temp_dir):
         """Should return complete result structure."""
-        result = await execute_command("echo test", working_directory=str(temp_dir))
+        result = await bash("echo test", description="Test result contains all fields")
         
         assert isinstance(result, CommandResult)
         assert hasattr(result, 'success')
@@ -231,14 +229,14 @@ class TestCommandResult:
     @pytest.mark.asyncio
     async def test_result_contains_command(self, temp_dir):
         """Should include the executed command in result."""
-        result = await execute_command("echo hello", working_directory=str(temp_dir))
+        result = await bash("echo hello", description="Test result contains command")
         
         assert result.command == "echo hello"
 
     @pytest.mark.asyncio
     async def test_result_contains_working_directory(self, temp_dir):
         """Should include the working directory in result."""
-        result = await execute_command("pwd", working_directory=str(temp_dir))
+        result = await bash("pwd", description="Test result contains working directory")
         
         assert result.working_directory == str(temp_dir)
 
@@ -249,7 +247,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_command(self, temp_dir):
         """Should handle empty command."""
-        result = await execute_command("", working_directory=str(temp_dir))
+        result = await bash("", description="Test empty command")
         
         # Empty command should either fail or return empty output
         assert isinstance(result, CommandResult)
@@ -257,14 +255,14 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_command_with_special_characters(self, temp_dir):
         """Should handle special characters in command."""
-        result = await execute_command("echo 'hello $USER'", working_directory=str(temp_dir))
+        result = await bash("echo 'hello $USER'", description="Test command with special characters")
         
         assert result.success is True
 
     @pytest.mark.asyncio
     async def test_command_with_newlines(self, temp_dir):
         """Should handle commands with newlines in output."""
-        result = await execute_command("echo -e 'line1\\nline2\\nline3'", working_directory=str(temp_dir))
+        result = await bash("echo -e 'line1\\nline2\\nline3'", description="Test command with newlines")
         
         assert result.success is True
         assert "\n" in result.stdout or "line1" in result.stdout
@@ -272,7 +270,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_unicode_output(self, temp_dir):
         """Should handle unicode in output."""
-        result = await execute_command("echo '你好世界 🌍'", working_directory=str(temp_dir))
+        result = await bash("echo '你好世界 🌍'", description="Test command with unicode")
         
         assert result.success is True
         assert "你好世界" in result.stdout or "🌍" in result.stdout
@@ -280,7 +278,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_large_output(self, temp_dir):
         """Should handle large output."""
-        result = await execute_command("seq 1 1000", working_directory=str(temp_dir))
+        result = await bash("seq 1 1000", description="Test large output")
         
         assert result.success is True
         assert "1000" in result.stdout

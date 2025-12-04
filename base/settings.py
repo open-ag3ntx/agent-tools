@@ -5,7 +5,7 @@ from typing import List
 
 class Settings(BaseSettings):
     # Default timeout for commands (in seconds)
-    default_timeout: int = 60
+    default_timeout: int = 120
     
     # Maximum timeout allowed
     max_timeout: int = 300
