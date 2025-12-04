@@ -4,7 +4,7 @@ from pathlib import Path
 
 from base import bash_utils
 from bash.tools.bash import bash
-from base.models import CommandResult
+from base.models import BashToolResult
 
 
 @pytest.fixture
@@ -205,7 +205,7 @@ class TestCommandResult:
         """Should return complete result structure."""
         result = await bash("echo test", description="Test result contains all fields", working_directory=str(temp_dir))
         
-        assert isinstance(result, CommandResult)
+        assert isinstance(result, BashToolResult)
         assert hasattr(result, 'success')
         assert hasattr(result, 'stdout')
         assert hasattr(result, 'stderr')
@@ -238,7 +238,7 @@ class TestEdgeCases:
         result = await bash("", description="Test empty command", working_directory=str(temp_dir))
         
         # Empty command should either fail or return empty output
-        assert isinstance(result, CommandResult)
+        assert isinstance(result, BashToolResult)
 
     @pytest.mark.asyncio
     async def test_command_with_special_characters(self, temp_dir):

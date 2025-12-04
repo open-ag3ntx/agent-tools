@@ -1,9 +1,10 @@
+
 from pydantic import BaseModel
 from typing import Optional
 from typing import Literal
 
 
-class CommandResult(BaseModel):
+class BashToolResult(BaseModel):
     success: bool = True
     error: Optional[str] = None
     stdout: Optional[str] = None
@@ -26,3 +27,5 @@ class TodoItem(BaseModel):
     status: Literal["pending", "completed", "cancelled"] = "pending"
 
 
+class GlobToolResult(BaseToolResult):
+    files: list[str] = []

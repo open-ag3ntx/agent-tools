@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 
 from base import bash_utils
 from base.settings import settings
-from base.models import CommandResult
+from base.models import BashToolResult
 
 
 async def bash(
@@ -14,7 +14,7 @@ async def bash(
     timeout: Annotated[int, "Timeout in seconds (default: 120, max: 600)"] = settings.default_timeout,
     run_in_background: Annotated[Optional[bool], "Whether to run the command in the background"] = False,
     working_directory: Annotated[Optional[str], "Working directory for the command"] = None,
-) -> CommandResult:
+) -> BashToolResult:
     """
     Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.
 
@@ -115,7 +115,7 @@ async def bash(
         
         # Validate working directory
         if not os.path.exists(cwd):
-            return CommandResult(
+            return BashToolResult(
                 success=False,
                 error=f"Working directory does not exist: {cwd}",
                 command=command,
@@ -123,7 +123,7 @@ async def bash(
             )
         
         if not os.path.isdir(cwd):
-            return CommandResult(
+            return BashToolResult(
                 success=False,
                 error=f"Path is not a directory: {cwd}",
                 command=command,
@@ -131,7 +131,7 @@ async def bash(
             )
         
         if bash_utils.is_command_blocked(command):
-            return CommandResult(
+            return BashToolResult(
                 success=False,
                 error=f"Command is blocked for security reasons: {command}",
                 command=command,
@@ -141,7 +141,7 @@ async def bash(
         # Check for dangerous patterns (warn but allow)
         dangerous_pattern = bash_utils.is_command_dangerous(command)
         if dangerous_pattern:
-            return CommandResult(
+            return BashToolResult(
                 success=False,
                 error=f"Command contains potentially dangerous pattern '{dangerous_pattern}'",
                 command=command,
@@ -158,7 +158,7 @@ async def bash(
         
         try:
             if run_in_background:
-                return CommandResult(
+                return BashToolResult(
                     success=True,
                     command=command,
                     run_in_background=run_in_background,
@@ -173,7 +173,7 @@ async def bash(
             stdout_str = stdout.decode('utf-8', errors='replace') if stdout else ""
             stderr_str = stderr.decode('utf-8', errors='replace') if stderr else ""
             
-            return CommandResult(
+            return BashToolResult(
                 success=process.returncode == 0,
                 stdout=stdout_str,
                 stderr=stderr_str[:30000], # return only first 30000 characters of stderr
@@ -186,7 +186,7 @@ async def bash(
         except asyncio.TimeoutError:
             process.kill()
             await process.wait()
-            return CommandResult(
+            return BashToolResult(
                 success=False,
                 error=f"Command timed out after {timeout} seconds",
                 command=command,
@@ -194,7 +194,7 @@ async def bash(
             )
     
     except Exception as e:
-        return CommandResult(
+        return BashToolResult(
             success=False,
             error=f"Error executing command: {str(e)}",
             command=command,
