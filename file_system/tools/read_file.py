@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 import os
 
 from base.settings import settings
-from base.utils import get_file_type, read_file_content
+from base.file_utils import get_file_type, read_file_content
 from base.models import BaseToolResult
 
 class ReadFileResult(BaseToolResult):

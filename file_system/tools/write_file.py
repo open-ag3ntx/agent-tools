@@ -1,7 +1,7 @@
 import os
 from base.settings import settings
 from base.models import BaseToolResult
-from base.utils import get_file_type, write_file_content
+from base.file_utils import get_file_type, write_file_content
 from typing import Annotated, Optional
 
 class WriteFileResult(BaseToolResult):

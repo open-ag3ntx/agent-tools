@@ -39,34 +39,16 @@ tools = [
 ]
 
 def create_prompt():
-    prompt_template = PromptTemplate.from_template(
-        """{agent_prompt}
-
-        {todo_prompt}
-        
-        {file_system_prompt}
-        
-        {command_line_prompt}
-        
-        Information about the environment you are working in:
-        Current directory: {current_directory}
-        """
-    )
     with open("agent-prompt.md", "r") as f:
         agent_prompt = f.read()
-    with open("file_system/prompt.md", "r") as f:
-        file_system_prompt = f.read()
-    with open("command_line/prompt.md", "r") as f:
-        command_line_prompt = f.read()
-    with open("todo/prompt.md", "r") as f:
-        todo_prompt = f.read()
-    return prompt_template.format(
-        agent_prompt=agent_prompt, 
-        file_system_prompt=file_system_prompt, 
-        command_line_prompt=command_line_prompt,
-        todo_prompt=todo_prompt,
-        current_directory=file_system_settings.present_test_directory,
+    agent_prompt = agent_prompt.format(
+        working_directory=file_system_settings.present_test_directory,
+        is_directory_a_git_repo=file_system_settings.is_git_repo,
+        platform=file_system_settings.platform,
+        os_version=file_system_settings.os_version,
+        todays_date=datetime.datetime.now().strftime("%Y-%m-%d"),
     )
+    return agent_prompt
 
 
 agent = create_agent(

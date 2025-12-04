@@ -13,6 +13,7 @@ async def bash(
     description: Annotated[str, "A clear, concise description of what this command does in 5-10 words"],
     timeout: Annotated[int, "Timeout in seconds (default: 120, max: 600)"] = settings.default_timeout,
     run_in_background: Annotated[Optional[bool], "Whether to run the command in the background"] = False,
+    working_directory: Annotated[Optional[str], "Working directory for the command"] = None,
 ) -> CommandResult:
     """
     Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.
@@ -109,6 +110,26 @@ async def bash(
     </example>
     """
     try:
+        # Determine the working directory
+        cwd = working_directory or settings.present_working_directory
+        
+        # Validate working directory
+        if not os.path.exists(cwd):
+            return CommandResult(
+                success=False,
+                error=f"Working directory does not exist: {cwd}",
+                command=command,
+                run_in_background=run_in_background
+            )
+        
+        if not os.path.isdir(cwd):
+            return CommandResult(
+                success=False,
+                error=f"Path is not a directory: {cwd}",
+                command=command,
+                run_in_background=run_in_background
+            )
+        
         if bash_utils.is_command_blocked(command):
             return CommandResult(
                 success=False,
@@ -131,7 +152,7 @@ async def bash(
             *shlex.split(command),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            cwd=settings.present_test_directory,
+            cwd=cwd,
             env={'PATH': '/usr/bin:/bin'}
         )
         

@@ -1,7 +1,7 @@
 import os
 from base.settings import settings
 from base.models import BaseToolResult
-from base.utils import get_file_type, normalize_newlines, read_file_content, safe_replace, write_file_content
+from base.file_utils import get_file_type, normalize_newlines, read_file_content, safe_replace, write_file_content
 from typing import Annotated, Optional
 
 class EditFileResult(BaseToolResult):

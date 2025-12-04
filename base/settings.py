@@ -53,6 +53,12 @@ class Settings(BaseSettings):
     os.makedirs(f"{present_working_directory}/test", exist_ok=True)
     present_test_directory: str = f"{present_working_directory}/test"
 
+    # platform
+    platform: str = os.uname().sysname
+    # os version
+    os_version: str = os.uname().release
+    # is git repo    
+    is_git_repo: bool = os.path.exists(f"{present_working_directory}/.git")
 
 
 settings = Settings()
