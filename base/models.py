@@ -29,3 +29,10 @@ class TodoItem(BaseModel):
 
 class GlobToolResult(BaseToolResult):
     files: list[str] = []
+
+
+class GrepToolResult(BaseToolResult):
+    lines: list[str] = []
+    files: list[str] = []
+    counts: int = 0
+    json: dict = {}
