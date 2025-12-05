@@ -1,5 +1,7 @@
 
 
+import asyncio
+import os
 from typing import Annotated, Literal, Optional
 
 from base.models import GrepToolResult
@@ -9,17 +11,17 @@ from base.settings import settings
 async def grep(
     pattern: Annotated[str, "The regular expression pattern to search for in file contents"],
     path: Annotated[Optional[str], "File or directory to search in (rg PATH). Defaults to current working directory."],
-    glob: Annotated[Optional[str], "Glob pattern to filter files (e.g. \"*.js\", \"*.{ts,tsx}\") - maps to rg --glob"],
-    output_mode: Annotated[Literal["content", "files_with_matches", "count"], "Output mode: \"content\" shows matching lines (supports -A/-B/-C context, -n line numbers, head_limit), \"files_with_matches\" shows file paths (supports head_limit), \"count\" shows match counts (supports head_limit). Defaults to \"files_with_matches\"."],
     A: Annotated[Optional[int], "Number of lines to show before each match (rg -B). Requires output_mode: \"content\", ignored otherwise."],
     B: Annotated[Optional[int], "Number of lines to show after each match (rg -A). Requires output_mode: \"content\", ignored otherwise."],
     C: Annotated[Optional[int], "Number of lines to show before and after each match (rg -C). Requires output_mode: \"content\", ignored otherwise."],
-    n: Annotated[Optional[bool], "Show line numbers in output (rg -n). Requires output_mode: \"content\", ignored otherwise. Defaults to true."],
-    i: Annotated[Optional[bool], "Case insensitive search (rg -i)"],
     type: Annotated[Optional[str], "File type to search (rg --type). Common types: js, py, rust, go, java, etc. More efficient than include for standard file types."],
-    head_limit: Annotated[Optional[int], "Limit output to first N lines/entries, equivalent to \"| head -N\". Works across all output modes: content (limits output lines), files_with_matches (limits file paths), count (limits count entries). Defaults based on \"cap\" experiment value: 0 (unlimited), 20, or 100."],
-    offset: Annotated[Optional[int], "Skip first N lines/entries before applying head_limit, equivalent to \"| tail -n +N | head -N\". Works across all output modes. Defaults to 0."],
-    multiline: Annotated[Optional[bool], "Enable multiline mode where . matches newlines and patterns can span lines (rg -U --multiline-dotall). Default: false."],
+    glob: Annotated[Optional[str], "Glob pattern to filter files (e.g. \"*.js\", \"*.{ts,tsx}\") - maps to rg --glob"],
+    output_mode: Annotated[Literal["content", "files_with_matches", "count"], "Output mode: \"content\" shows matching lines (supports -A/-B/-C context, -n line numbers, head_limit), \"files_with_matches\" shows file paths (supports head_limit), \"count\" shows match counts (supports head_limit). Defaults to \"files_with_matches\"."] = "files_with_matches",
+    i: Annotated[Optional[bool], "Case insensitive search (rg -i)"] = True,
+    multiline: Annotated[Optional[bool], "Enable multiline mode where . matches newlines and patterns can span lines (rg -U --multiline-dotall). Default: false."] = False,
+    n: Annotated[Optional[bool], "Show line numbers in output (rg -n). Requires output_mode: \"content\", ignored otherwise. Defaults to true."] = True,
+    offset: Annotated[Optional[int], "Skip first N lines/entries before applying head_limit, equivalent to \"| tail -n +N | head -N\". Works across all output modes. Defaults to 0."] = 0,
+    head_limit: Annotated[Optional[int], "Limit output to first N lines/entries, equivalent to \"| head -N\". Works across all output modes: content (limits output lines), files_with_matches (limits file paths), count (limits count entries). Defaults based on \"cap\" experiment value: 1000"] = 1000,
 ) -> GrepToolResult:
     """
     A powerful search tool built on ripgrep
@@ -35,8 +37,28 @@ async def grep(
 
     if path is None:
         path = settings.present_test_directory
-
+    
+    if not os.path.exists(path):
+        return GrepToolResult(
+            success=False,
+            error=f"Path does not exist: {path}",
+        )
+    
+    if not path.startswith(settings.present_test_directory):
+        return GrepToolResult(
+            success=False,
+            error=f"Path is not in the present working directory: {path}",
+        )
+    
     if output_mode is None:
         output_mode = "files_with_matches"
+    
+    command_with_args = ['grep', pattern]
+
+
+    
+    try:
+
+        process = await asyncio.create_subprocess_exec(
 
     
