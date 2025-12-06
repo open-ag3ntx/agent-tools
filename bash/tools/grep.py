@@ -50,9 +50,6 @@ async def grep(
             error=f"Path is not in the present working directory: {path}",
         )
     
-    if output_mode is None:
-        output_mode = "files_with_matches"
-    
     command_with_args = ['grep', pattern]
 
     if i:
