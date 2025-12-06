@@ -55,10 +55,48 @@ async def grep(
     
     command_with_args = ['grep', pattern]
 
+    if i:
+        command_with_args.append('-i')
+    if multiline:
+        command_with_args.append('-U')
+        command_with_args.append('--multiline-dotall')
+    if n:
+        command_with_args.append('-n')
+    if offset:
+        command_with_args.append(f'-offset {offset}')
+    if head_limit:
+        command_with_args.append(f'-head_limit {head_limit}')
+    if A:
+        command_with_args.append(f'-A {A}')
+    if B:
+        command_with_args.append(f'-B {B}')
+    if C:
+        command_with_args.append(f'-C {C}')
+    if type:
+        command_with_args.append(f'--type {type}')
+    if glob:
+        command_with_args.append(f'--glob {glob}')
+    if output_mode:
+        command_with_args.append(f'--output_mode {output_mode}')
+    if path:
+        command_with_args.append(path)
+    if pattern:
+        command_with_args.append(pattern)
 
-    
-    try:
-
-        process = await asyncio.create_subprocess_exec(
-
-    
+    process = await asyncio.create_subprocess_exec(
+        *command_with_args,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        cwd=path,
+        env={'PATH': '/usr/bin:/bin'}
+    )
+    stdout, stderr = await process.communicate()
+    stdout_str = stdout.decode('utf-8', errors='replace') if stdout else ""
+    stderr_str = stderr.decode('utf-8', errors='replace') if stderr else ""
+    return GrepToolResult(
+        success=process.returncode == 0,
+        stdout=stdout_str,
+        stderr=stderr_str[:30000], # return only first 30000 characters of stderr
+        return_code=process.returncode,
+        command=command_with_args,
+    )
