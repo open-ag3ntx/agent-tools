@@ -18,8 +18,8 @@ from file_system.tools.edit_file import edit_file
 from todo.tools import list_todos
 from todo.tools import update_todo
 from todo.tools import create_todo
-from bash.tools import bash
-from bash.tools import glob
+from bash.tools import bash, glob, grep
+
 load_dotenv()
 
 model = ChatGoogleGenerativeAI(
@@ -37,6 +37,7 @@ tools = [
     update_todo,
     bash,
     glob,
+    grep
 ]
 
 def create_prompt():

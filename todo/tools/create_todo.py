@@ -1,3 +1,4 @@
+from ast import List
 from typing import Annotated
 from langchain_core.tools import tool
 from base.store import _get_next_id, todo_store
@@ -6,7 +7,7 @@ from base.models import TodoItem
 
 @tool
 def create_todo(
-    title: Annotated[str, "The title of the todo item"],
+    titles: Annotated[List[str], "The titles of the todo items"],
     task_group: Annotated[str, "The task_group of the todo item"]
 ) -> str:
     """Create a new todo item and add it to the todo list for tracking long-running tasks.
@@ -22,14 +23,14 @@ def create_todo(
     - Create todos BEFORE starting work on each step, not after
     - Use clear, action-oriented titles (e.g., 'Fetch user data from API' rather than 'User data')
     - Group related todos under the same task_group name for organization
-    - Create a todo for the overall task completion as a final checkpoint
+    - Create todos for the overall task completion as a final checkpoint
     
     Args:
-        title: A clear, descriptive title for the todo item (e.g., 'Step 1: Initialize database connection')
+        titles: A list of clear, descriptive titles for the todo items (e.g., ['Step 1: Initialize database connection', 'Step 2: Fetch user data from API'])
         task_group: The task_group or workflow name this todo belongs to (e.g., 'data-pipeline-2024')
     
     Returns:
-        Confirmation message with the todo ID
+        Confirmation message with the todo IDs
     
     Example usage:
         When starting a data analysis task, first create todos for:
@@ -40,12 +41,14 @@ def create_todo(
     """
     if task_group not in todo_store:
         todo_store[task_group] = {}
-
-    todo_id = _get_next_id(task_group)
-    todo_store[task_group][todo_id] = TodoItem(
-        id=todo_id,
-        title=title,
-        task_group=task_group,
-        status="pending"
-    )
-    return f'Todo created successfully with ID {todo_id}'
+    todo_ids = []
+    for title in titles:
+        todo_id = _get_next_id(task_group)
+        todo_store[task_group][todo_id] = TodoItem(
+            id=todo_id,
+            title=title,
+            task_group=task_group,
+            status="pending"
+        )
+        todo_ids.append(todo_id)
+    return f'Todos created successfully with IDs {todo_ids}'
