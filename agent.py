@@ -11,7 +11,9 @@ from todo.tools import list_todos
 from todo.tools import update_todo
 from todo.tools import create_todo
 from bash.tools import bash, glob, grep
+from dotenv import load_dotenv
 
+load_dotenv()
 
 tools = [
     read_file,
