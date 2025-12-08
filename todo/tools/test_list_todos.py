@@ -25,8 +25,7 @@ class TestListTodos:
 
     def test_list_todos_returns_all_todos(self):
         """Should return all todos for a task group."""
-        create_todo.invoke({"title": "Task 1", "task_group": "project"})
-        create_todo.invoke({"title": "Task 2", "task_group": "project"})
+        create_todo.invoke({"titles": ["Task 1", "Task 2"], "task_group": "project"})
         
         result = list_todos.invoke({"task_group": "project"})
         
@@ -39,17 +38,17 @@ class TestListTodos:
 
     def test_list_todos_only_returns_specified_group(self):
         """Should only return todos from the specified group."""
-        create_todo.invoke({"title": "Frontend task", "task_group": "frontend"})
-        create_todo.invoke({"title": "Backend task", "task_group": "backend"})
+        create_todo.invoke({"titles": ["Frontend task", "Backend task"], "task_group": "frontend"})
         
         frontend_todos = list_todos.invoke({"task_group": "frontend"})
         
         assert frontend_todos[1].title == "Frontend task"
-        assert len(frontend_todos) == 1
+        assert frontend_todos[2].title == "Backend task"
+        assert len(frontend_todos) == 2
 
     def test_list_todos_shows_status(self):
         """Should show the status of each todo."""
-        create_todo.invoke({"title": "Task 1", "task_group": "project"})
+        create_todo.invoke({"titles": ["Task 1"], "task_group": "project"})
         
         result = list_todos.invoke({"task_group": "project"})
         

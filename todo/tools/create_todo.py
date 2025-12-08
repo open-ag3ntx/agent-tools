@@ -1,4 +1,4 @@
-from ast import List
+
 from typing import Annotated
 from langchain_core.tools import tool
 from base.store import _get_next_id, todo_store
@@ -7,7 +7,7 @@ from base.models import TodoItem
 
 @tool
 def create_todo(
-    titles: Annotated[List[str], "The titles of the todo items"],
+    titles: Annotated[list[str], "The titles of the todo items to create"],
     task_group: Annotated[str, "The task_group of the todo item"]
 ) -> str:
     """Create a new todo item and add it to the todo list for tracking long-running tasks.
