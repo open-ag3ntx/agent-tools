@@ -5,3 +5,4 @@ __pycache__/
 test/*
 .gemini/
 gha-creds-*.json
+.DS_Store
