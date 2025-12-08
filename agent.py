@@ -1,16 +1,8 @@
 import datetime
 from langchain.agents import create_agent
-from langchain_core.prompts import PromptTemplate, prompt
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-from dotenv import load_dotenv
-import os
-
 from rich.console import Console
 from rich.markdown import Markdown
-console = Console()
-
 from base.settings import settings as file_system_settings
 from file_system.tools.write_file import write_file
 from file_system.tools.read_file import read_file
@@ -20,13 +12,6 @@ from todo.tools import update_todo
 from todo.tools import create_todo
 from bash.tools import bash, glob, grep
 
-load_dotenv()
-
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-pro",
-    temperature=0.1,
-    api_key=os.getenv("GOOGLE_API_KEY")
-)
 
 tools = [
     read_file,
@@ -54,11 +39,12 @@ def create_prompt():
 
 
 agent = create_agent(
-    model=model,
+    model='google_genai:gemini-2.5-flash',
     tools=tools,
     system_prompt=create_prompt()
 )
 
+console = Console()
 
 def print_message(msg):
     """Pretty print a message with markdown formatting for text content."""
