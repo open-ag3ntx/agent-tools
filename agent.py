@@ -1,4 +1,5 @@
 import datetime
+import os
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from rich.console import Console
@@ -12,8 +13,13 @@ from todo.tools import update_todo
 from todo.tools import create_todo
 from bash.tools import bash, glob, grep
 from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash"
+)
 
 tools = [
     read_file,
@@ -41,7 +47,7 @@ def create_prompt():
 
 
 agent = create_agent(
-    model='google_genai:gemini-2.5-flash',
+    model=llm,
     tools=tools,
     system_prompt=create_prompt()
 )
