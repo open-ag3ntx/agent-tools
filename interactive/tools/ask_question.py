@@ -3,12 +3,96 @@
 from typing import Annotated
 from typing import Optional
 
+from base.models import AskQuestionRequest
+
+"""
+{
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "description": "The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: \"Which library should we use for date formatting?\" If multiSelect is true, phrase it accordingly, e.g. \"Which features do you want to enable?\""
+                },
+                "header": {
+                  "type": "string",
+                  "description": "Very short label displayed as a chip/tag (max 12 chars). Examples: \"Auth method\", \"Library\", \"Approach\"."
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "description": "The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice."
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Explanation of what this option means or what will happen if chosen. Useful for providing context about trade-offs or implications."
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "description"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 2,
+                  "maxItems": 4,
+                  "description": "The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically."
+                },
+                "multiSelect": {
+                  "type": "boolean",
+                  "description": "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive."
+                }
+              },
+              "required": [
+                "question",
+                "header",
+                "options",
+                "multiSelect"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "description": "Questions to ask the user (1-4 questions)"
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "User answers collected by the permission component"
+          }
+        },
+        "required": [
+          "questions"
+        ]
+
+"""
 
 async def ask_question(
-    question: Annotated[str, "The question to ask"],
-    options: Annotated[Optional[list[str]], "The options to choose from"],
-) -> str:
+    questions: Annotated[list[AskQuestionRequest], "The questions to ask the user (1-4 questions)"],
+) -> dict[str, str]:
     """
-    Ask a question and return the answer.
+    Use this tool when you need to ask the user questions during execution. This allows you to:
+    1. Gather user preferences or requirements
+    2. Clarify ambiguous instructions
+    3. Get decisions on implementation choices as you work
+    4. Offer choices to the user about what direction to take.
+
+    Usage notes:
+    - Users will always be able to select \"Other\" to provide custom text input
+    - Use multiSelect: true to allow multiple answers to be selected for a question
+
     """
-    return "Answer to the question"
+
+    answers = {}
+    for question in questions:
+        answer = await ask_question_ui(question)
+        answers[question.header] = answer
+    return answers
