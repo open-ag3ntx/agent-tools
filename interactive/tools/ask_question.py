@@ -92,7 +92,4 @@ async def ask_question(
     """
 
     answers = {}
-    for question in questions:
-        answer = await ask_question_ui(question)
-        answers[question.header] = answer
     return answers
