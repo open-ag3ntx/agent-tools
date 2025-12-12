@@ -30,14 +30,14 @@ tools = [
     *llm_client.get_bash_tools(),
 ]
 
-print(f"Loaded {len(tools)} tools into the agent.")
-print("Tools: ")
-for tool in tools:
-    print(f"  - {tool}")
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    api_key=os.getenv("GOOGLE_API_KEY_V3"),
+)
 
 agent = create_agent(
-    model=llm_client.llm,
-    tools=llm_client.get_file_system_tools() ,
+    model=llm,
+    tools=tools,
     system_prompt=create_prompt()
 )
 

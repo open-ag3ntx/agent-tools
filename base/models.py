@@ -30,6 +30,8 @@ class TodoItem(BaseModel):
 
 class GlobToolResult(BaseToolResult):
     files: list[str] = []
+    total_files: int = 0
+    skipped_files: int = 0
 
 
 class GrepToolResult(BaseToolResult):

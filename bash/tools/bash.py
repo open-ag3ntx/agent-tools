@@ -97,11 +97,12 @@ async def bash(
 
     Important notes:
     - NEVER run additional commands to read or explore code, besides git bash commands
-    - NEVER use the TodoWrite or Task tools
+    - AVOID running commands that lists all the nested files in a directory (like `find . -type f` ls -R) as these can be very slow and return massive outputs
     - DO NOT push to the remote repository unless the user explicitly asks you to do so
     - IMPORTANT: Never use git commands with the -i flag (like git rebase -i or git add -i) since they require interactive input which is not supported.
     - If there are no changes to commit (i.e., no untracked files and no modifications), do not create an empty commit
     - In order to ensure good formatting, ALWAYS pass the commit message via a HEREDOC, a la this example:
+    - NEVER use this tool for listing files as there can 1000s of nested files in a directory. Use the glob tool instead.
     <example>
     git commit -m "$(cat <<'EOF'
     Commit message here.
@@ -112,6 +113,13 @@ async def bash(
     try:
         # Determine the working directory
         cwd = working_directory or settings.present_test_directory
+
+        if 'ls -R' in command or 'find ' in command:
+            return BashToolResult(
+                success=False,
+                error="Refusing to run potentially slow command that lists all nested files. Use the glob tool instead.",
+                command=command,
+            )
         
         # Validate working directory
         if not os.path.exists(cwd):

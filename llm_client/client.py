@@ -7,6 +7,7 @@ from file_system.tools import read_file, edit_file, write_file
 from todo.tools import list_todos, update_todo, create_todo
 from bash.tools import bash, glob, grep
 import os
+from loguru import logger
 
 
 
@@ -22,7 +23,8 @@ class LLMClient:
 
         if model_provider == "google":
             self.__llm = ChatGoogleGenerativeAI(
-                model=model
+                model=model,
+                api_key=os.getenv("GOOGLE_API_KEY_V2"),
             )
         elif model_provider == "openrouter":
             self.__llm = ChatOpenAI(
@@ -32,7 +34,7 @@ class LLMClient:
             )
         else:
             raise ValueError("Unsupported model provider")
-    
+        logger.info(f'Initilised LLMClient with provider {model_provider} model {model}')
     @property
     def llm(self):
         return self.__llm
@@ -41,7 +43,7 @@ class LLMClient:
         return LLMClient().llm
 
     def get_file_system_tools(self):
-        return [read_file, edit_file, write_file]
+        return [read_file.read_file, edit_file.edit_file, write_file.write_file]
     
     def get_todo_tools(self):
         return [create_todo, list_todos, update_todo]

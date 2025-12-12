@@ -10,7 +10,8 @@ import glob as glob_lib
 
 async def glob(
     pattern: Annotated[str, "The glob pattern to match files against"],
-    path: Annotated[str, "The directory to search in. If not specified, the current working directory will be used. IMPORTANT: Omit this field to use the default directory. DO NOT enter \"undefined\" or \"null\" - simply omit it for the default behavior. Must be a valid directory path if provided."],
+    path: Annotated[str, "The absolute directory to search in. If not specified, the current working directory will be used. IMPORTANT: Omit this field to use the default directory. DO NOT enter \"undefined\" or \"null\" - simply omit it for the default behavior. Must be a valid directory path if provided."],
+    exclude_dirs: Annotated[list[str], "List of directory names to exclude from the search (e.g., ['__pycache__', 'node_modules', 'venv'])"] = [],
 ) -> GlobToolResult:
     """
     - Fast file pattern matching tool that works with any codebase size
@@ -27,7 +28,7 @@ async def glob(
         if not os.path.exists(cwd):
             return GlobToolResult(
                 success=False,
-                error=f"Working directory does not exist: {cwd}",
+                error=f"Absolute working directory does not exist: {cwd}",
             )
         if not os.path.isdir(cwd):
             return GlobToolResult(
@@ -36,6 +37,7 @@ async def glob(
             )
         
         if not cwd.startswith(settings.present_test_directory):
+            print(f"Denied globbing outside present working directory: {cwd} vs {settings.present_test_directory}")
             return GlobToolResult(
                 success=False,
                 error=f"Path is not in the present working directory: {cwd}",
@@ -43,11 +45,18 @@ async def glob(
         
         files = Path(cwd).glob(pattern, recurse_symlinks=False, case_sensitive=False)
         files = sorted(files, key=lambda x: x.stat().st_mtime, reverse=True)
-        files = [str(file) for file in files]
+        files = [str(file) for file in files if all(excl not in file.parts for excl in exclude_dirs)]
         # TODO filter outl files based on gitignore
+        total = len(files)
+        skipped = 0  # Placeholder for future skipped files count based on gitignore
+
+        files = files[:100]  # Limit to first 500 files to avoid massive outputs
+
         return GlobToolResult(
             success=True,
-            files=files
+            files=files,
+            total_files=total,
+            skipped_files=total - len(files),
         )
     except Exception as e:
         return GlobToolResult(
