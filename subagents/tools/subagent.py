@@ -60,32 +60,27 @@ async def subagent(
     """
 
     llm = llm_client.get_new_instance()
-    llm.bind_tools([
-        llm_client.get_file_system_tools(),
-        llm_client.get_todo_tools(),
-        llm_client.get_bash_tools()
-    ])
-    result = await llm_client.llm.ainvoke(
+    subagent_tools = []
+    subagent_tools.extend(llm_client.get_file_system_tools())
+    subagent_tools.extend(llm_client.get_todo_tools())
+    subagent_tools.extend(llm_client.get_bash_tools())
+
+    subagent = create_agent(
+        model=llm,
+        tools=subagent_tools,
+        system_prompt="""
+            You are an autonomous sub-agent launched to perform a specific task. You have access to various tools to help you complete your task.
+            Your goal is to complete the task assigned to you as effectively as possible using the available tools.
+            When you are done, return the result of your task so main agent can act on it.
+        """
+
+    )
+    result = await subagent.ainvoke(
         [
             SystemMessage(
-                """
-                You are an autonomous sub-agent launched to perform a specific task. You have access to various tools to help you complete your task.
-                Your goal is to complete the task assigned to you as effectively as possible using the available tools.
-                When you are done, return the result of your task so main agent can act on it.
-                """
-            ),
-            HumanMessage(
-                f"""
-                You have been launched as a sub-agent to perform the following task:
-
-                Task Description: {description}
-
-                Task Prompt: {prompt}
-
-                Use your tools wisely to complete the task.
-                """
+                content=f"You have been launched to perform the following task: {prompt} description: {description}"
             )
         ]
     )
-
+    return result['message'][-1].content
 
