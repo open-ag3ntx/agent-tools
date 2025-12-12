@@ -14,12 +14,9 @@ from todo.tools import create_todo
 from bash.tools import bash, glob, grep
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from llm_client.client import client as llm_client
 
 load_dotenv()
-
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash"
-)
 
 tools = [
     read_file,
@@ -47,7 +44,7 @@ def create_prompt():
 
 
 agent = create_agent(
-    model=llm,
+    model=llm_client.llm,
     tools=tools,
     system_prompt=create_prompt()
 )
