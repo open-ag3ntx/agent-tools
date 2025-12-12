@@ -5,30 +5,12 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from rich.console import Console
 from rich.markdown import Markdown
 from base.settings import settings as file_system_settings
-from file_system.tools.write_file import write_file
-from file_system.tools.read_file import read_file
-from file_system.tools.edit_file import edit_file
-from todo.tools import list_todos
-from todo.tools import update_todo
-from todo.tools import create_todo
-from bash.tools import bash, glob, grep
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from llm_client.client import client as llm_client
 
 load_dotenv()
 
-tools = [
-    read_file,
-    edit_file,
-    write_file,
-    create_todo,
-    list_todos,
-    update_todo,
-    bash,
-    glob,
-    grep
-]
 
 def create_prompt():
     with open("agent-prompt.md", "r") as f:
@@ -42,10 +24,20 @@ def create_prompt():
     )
     return agent_prompt
 
+tools = [
+    *llm_client.get_file_system_tools(),
+    *llm_client.get_todo_tools(),
+    *llm_client.get_bash_tools(),
+]
+
+print(f"Loaded {len(tools)} tools into the agent.")
+print("Tools: ")
+for tool in tools:
+    print(f"  - {tool}")
 
 agent = create_agent(
     model=llm_client.llm,
-    tools=tools,
+    tools=llm_client.get_file_system_tools() ,
     system_prompt=create_prompt()
 )
 

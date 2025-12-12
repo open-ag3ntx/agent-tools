@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from file_system.tools import read_file, edit_file, write_file
 from todo.tools import list_todos, update_todo, create_todo
 from bash.tools import bash, glob, grep
+import os
 
 
 
@@ -38,6 +39,15 @@ class LLMClient:
     
     def get_new_instance(self):
         return LLMClient().llm
+
+    def get_file_system_tools(self):
+        return [read_file, edit_file, write_file]
+    
+    def get_todo_tools(self):
+        return [create_todo, list_todos, update_todo]
+    
+    def get_bash_tools(self):
+        return [bash, glob, grep]
 
 
 client = LLMClient()
