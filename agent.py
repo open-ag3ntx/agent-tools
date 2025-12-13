@@ -50,7 +50,6 @@ def print_message(msg):
         print(msg.content)
     elif isinstance(msg, ToolMessage):
         print("================================= Tool Message =================================")
-        print(f"Name: {msg.name}")
         print(msg.content)
     elif isinstance(msg, AIMessage):
         print("================================== AI Message ==================================")
