@@ -30,10 +30,7 @@ tools = [
     *llm_client.get_bash_tools(),
 ]
 
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    api_key=os.getenv("GOOGLE_API_KEY_V3"),
-)
+llm = llm_client.get_new_instance()
 
 agent = create_agent(
     model=llm,
