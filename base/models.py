@@ -41,12 +41,12 @@ class GrepToolResult(BaseToolResult):
 
 
 class AskQuestionOption(BaseModel):
-    label: str = Annotated[str, "The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice."]
-    description: str = Annotated[str, "Explanation of what this option means or what will happen if chosen. Useful for providing context about trade-offs or implications."]
+    label: Annotated[str, "The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice."]
+    description: Annotated[str, "Explanation of what this option means or what will happen if chosen. Useful for providing context about trade-offs or implications."]
 
 
 class AskQuestionRequest(BaseModel):
-    question: str = Annotated[str, "The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: \"Which library should we use for date formatting?\" If multiSelect is true, phrase it accordingly, e.g. \"Which features do you want to enable?\""]
-    header: str = Annotated[str, "Very short label displayed as a chip/tag (max 12 chars). Examples: \"Auth method\", \"Library\", \"Approach\"."]
-    options: list[AskQuestionOption] = Annotated[list[AskQuestionOption], "The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically."]
-    multi_select: bool = Annotated[bool, "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive."]
+    question: Annotated[str, "The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: \"Which library should we use for date formatting?\" If multiSelect is true, phrase it accordingly, e.g. \"Which features do you want to enable?\""]
+    header: Annotated[str, "Very short label displayed as a chip/tag (max 12 chars). Examples: \"Auth method\", \"Library\", \"Approach\"."]
+    options: Annotated[list[AskQuestionOption], "The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically."]
+    multi_select: Annotated[bool, "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive."]

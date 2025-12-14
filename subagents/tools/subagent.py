@@ -1,6 +1,6 @@
 from typing import Annotated
-from llm_client.client import client as llm_client
 from langchain.messages import SystemMessage
+from langchain.agents import create_agent
 
 
 async def subagent(
@@ -58,12 +58,13 @@ async def subagent(
     </example>
 
     """
-
-    llm = llm_client.get_new_instance()
+    from llm_client.client import client
+    llm = client.get_new_instance()
     subagent_tools = []
-    subagent_tools.extend(llm_client.get_file_system_tools())
-    subagent_tools.extend(llm_client.get_todo_tools())
-    subagent_tools.extend(llm_client.get_bash_tools())
+    subagent_tools.extend(client.get_file_system_tools())
+    subagent_tools.extend(client.get_todo_tools())
+    subagent_tools.extend(client.get_bash_tools())
+    subagent_tools.extend(client.get_interactive_tools())
 
     subagent = create_agent(
         model=llm,
@@ -76,11 +77,11 @@ async def subagent(
 
     )
     result = await subagent.ainvoke(
-        [
-            SystemMessage(
-                content=f"You have been launched to perform the following task: {prompt} description: {description}"
-            )
-        ]
+        {
+            "messages": [
+                ("system", f"You have been launched to perform the following task: {prompt} description: {description}")
+            ]
+        }
     )
     return result['message'][-1].content
 
