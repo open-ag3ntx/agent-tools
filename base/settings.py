@@ -42,7 +42,7 @@ class Settings(BaseSettings):
         "init ",
     ]
 
-    file_size_limit: int = 10 * 1024 * 1024 # 100MB
+    file_size_limit: int = 10 * 1024 * 1024 # 10MB
     max_lines_to_read: int = 2000
     max_length_of_line: int = 2000
 
