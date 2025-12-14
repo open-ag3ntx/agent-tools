@@ -6,6 +6,8 @@ from langchain_openai import ChatOpenAI
 from file_system.tools import read_file, edit_file, write_file
 from todo.tools import list_todos, update_todo, create_todo
 from bash.tools import bash, glob, grep
+from interactive.tools.ask_question import ask_question
+from subagents.tools.subagent import subagent
 import os
 from loguru import logger
 
@@ -50,6 +52,12 @@ class LLMClient:
     
     def get_bash_tools(self):
         return [bash, glob, grep]
+    
+    def get_interactive_tools(self):
+        return [ask_question]
+    
+    def get_subagent_tool(self):
+        return [subagent]
 
 
 client = LLMClient()

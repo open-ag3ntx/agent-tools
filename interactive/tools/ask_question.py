@@ -5,75 +5,6 @@ from typing import Optional
 
 from base.models import AskQuestionRequest
 
-"""
-{
-          "questions": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "description": "The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: \"Which library should we use for date formatting?\" If multiSelect is true, phrase it accordingly, e.g. \"Which features do you want to enable?\""
-                },
-                "header": {
-                  "type": "string",
-                  "description": "Very short label displayed as a chip/tag (max 12 chars). Examples: \"Auth method\", \"Library\", \"Approach\"."
-                },
-                "options": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "label": {
-                        "type": "string",
-                        "description": "The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice."
-                      },
-                      "description": {
-                        "type": "string",
-                        "description": "Explanation of what this option means or what will happen if chosen. Useful for providing context about trade-offs or implications."
-                      }
-                    },
-                    "required": [
-                      "label",
-                      "description"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "minItems": 2,
-                  "maxItems": 4,
-                  "description": "The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically."
-                },
-                "multiSelect": {
-                  "type": "boolean",
-                  "description": "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive."
-                }
-              },
-              "required": [
-                "question",
-                "header",
-                "options",
-                "multiSelect"
-              ],
-              "additionalProperties": false
-            },
-            "minItems": 1,
-            "maxItems": 4,
-            "description": "Questions to ask the user (1-4 questions)"
-          },
-          "answers": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "User answers collected by the permission component"
-          }
-        },
-        "required": [
-          "questions"
-        ]
-
-"""
 
 async def ask_question(
     questions: Annotated[list[AskQuestionRequest], "The questions to ask the user (1-4 questions)"],
@@ -91,5 +22,26 @@ async def ask_question(
 
     """
 
-    answers = {}
+    for question in questions:
+        print("================================= User Question =================================")
+        print(f"Header: {question.header}")
+        print(f"Question: {question.question}")
+        print("Options:")
+        for idx, option in enumerate(question.options):
+            print(f"  {idx + 1}. {option.label} - {option.description}")
+        if question.multi_select:
+            print("  You may select multiple options (comma separated).")
+        print("  0. Other - Provide a custom answer.")
+        chosen = input("Please enter the number(s) of your choice: ")
+        chosen_indices = [int(x.strip()) for x in chosen.split(",") if x.strip().isdigit()]
+        answers = {}
+        for idx in chosen_indices:
+            if idx == 0:
+                custom_answer = input("Please enter your custom answer: ")
+                answers[question.header] = custom_answer
+            elif 1 <= idx <= len(question.options):
+                selected_option = question.options[idx - 1]
+                answers[question.header] = selected_option.label
+            else:
+                print(f"Invalid choice: {idx}")
     return answers
