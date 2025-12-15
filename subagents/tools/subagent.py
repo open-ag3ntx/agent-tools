@@ -76,12 +76,19 @@ async def subagent(
         """
 
     )
+    config = {"configurable": {"thread_id": "1"}} 
+    
     result = await subagent.ainvoke(
         {
             "messages": [
-                ("system", f"You have been launched to perform the following task: {prompt} description: {description}")
+                {"role": "user", "content": (f"You have been assigned a new task to complete autonomously\n\n"
+                    f"Task Description: {description}\n\n"
+                    f"Task Prompt: {prompt}")
+                }
             ]
-        }
+        },
+        config=config
     )
-    return result['message'][-1].content
+
+    return result['messages'][-1].content
 
