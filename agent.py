@@ -32,6 +32,10 @@ tools = [
     *llm_client.get_subagent_tool()
 ]
 
+cache_config = {
+    
+}
+
 llm = llm_client.get_new_instance()
 
 agent = create_agent(
