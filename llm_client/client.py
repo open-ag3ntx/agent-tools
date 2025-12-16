@@ -41,7 +41,8 @@ class LLMClient:
     def llm(self):
         return self.__llm
     
-    def get_new_instance(self):
+    def get_new_instance(self, config: Optional[dict] = None):
+        
         return LLMClient().llm
 
     def get_file_system_tools(self):
