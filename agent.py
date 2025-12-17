@@ -93,7 +93,6 @@ def print_message(msg):
                 else:
                     print(content)
     else:
-        # Fallback to pretty_print for unknown message types
         msg.pretty_print()
 
 
@@ -125,46 +124,11 @@ def get_multiline_input(prompt: str = "You: ") -> str:
     return "\n".join(lines)
 
 
-async def main():
-    print("🤖 AI Coding Agent Ready.")
-    print("   Type 'exit' to quit.")
-    print("   For multiline input, press Enter twice to submit.\n")
-    
-    # Maintain conversation history for multi-turn conversations
-    messages = []
-    
-    while True:
-        try:
-            user_input = get_multiline_input("\nYou: ")
-            if user_input.lower() == "exit":
-                print("Goodbye!")
-                break
-            if not user_input.strip():
-                continue
-            
-            # Add user message to history
-            messages.append(("user", user_input))
-            
-            # Track which messages we've already printed
-            printed_count = 0
-            
-            async for chunk in agent.astream({
-                "messages": messages
-            }, stream_mode="values"):
-                # Print all new messages (intermediate steps)
-                all_messages = chunk["messages"]
-                for msg in all_messages[printed_count:]:
-                    print_message(msg)
-                printed_count = len(all_messages)
-            
-            # Update messages with the final state (includes all AI responses and tool calls)
-            messages = chunk["messages"]
-            
-        except KeyboardInterrupt:
-            print("\nGoodbye!")
-            break
+def run_tui():
+    """Run the Terminal UI."""
+    from tui.input import run_tui
+    run_tui()
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    run_tui()
