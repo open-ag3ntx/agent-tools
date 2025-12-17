@@ -41,7 +41,7 @@ class LLMClient:
     def llm(self):
         return self.__llm
     
-    def get_new_instance(self, config: Optional[dict] = None):
+    def get_new_instance(self):
         
         return LLMClient().llm
 
