@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from typing import Annotated
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 
 from file_system.tools import read_file, edit_file, write_file
 from todo.tools import list_todos, update_todo, create_todo
@@ -33,6 +34,10 @@ class LLMClient:
                 model=model,
                 api_key=os.getenv("OPENROUTER_KEY"),
                 base_url="https://openrouter.ai/api/v1",
+            )
+        elif model_provider == "ollama":
+            self.__llm = ChatOllama(
+                model=model
             )
         else:
             raise ValueError("Unsupported model provider")
