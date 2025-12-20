@@ -83,7 +83,7 @@ def print_message(msg):
                         elif text:
                             print(text)
                     elif isinstance(block, str):
-                        if text:
+                        if block:
                             console.print(Markdown(block))
                         else:
                             print(block)

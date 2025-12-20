@@ -94,7 +94,7 @@ async def normalize_newlines(file_content: str) -> str:
     return file_content.replace('\r\n', '\n')
 
 
-async def safe_replace(file_content: str, old_content: str, new_content: str, replace_all: bool = True) -> str:
+async def safe_replace(file_content: str, old_content: str, new_content: str, replace_all: bool | None = True) -> str:
     """
     Safely replace the old content with the new content in a file content.
     
