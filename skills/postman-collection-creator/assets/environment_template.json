@@ -1,0 +1,47 @@
+{
+  "name": "Development Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://dev-api.example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "username",
+      "value": "test@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "timeout",
+      "value": "5000",
+      "type": "default",
+      "enabled": true
+    }
+  ]
+}
