@@ -1,3 +1,4 @@
+from base.settings import settings
 from langchain_core.tools import StructuredTool
 from base.models import SkillToolResponse
 from typing import Annotated
@@ -8,9 +9,11 @@ async def call_skill(
 ) -> SkillToolResponse:
     
     # Implementation will be handled by the agent framework
-    pass
+    return SkillToolResponse(
+        skill_name=skill_name,
+    )
 
-description = """"
+description = f""""
     Execute a skill within the main conversation
 
     <skills_instructions>
@@ -18,12 +21,12 @@ description = """"
 
     How to use skills:
     - Invoke skills using this tool with the skill name only (no arguments)
-    - When you invoke a skill, you will see <command-message>The \"{name}\" skill is loading</command-message>
+    - When you invoke a skill, you will see <command-message>The {{name}} skill is loading</command-message>
     - The skill's prompt will expand and provide detailed instructions on how to complete the task
     - Examples:
-    - `skill: \"pdf\"` - invoke the pdf skill
-    - `skill: \"xlsx\"` - invoke the xlsx skill
-    - `skill: \"ms-office-suite:pdf\"` - invoke using fully qualified name
+    - `skill: pdf` - invoke the pdf skill
+    - `skill: xlsx` - invoke the xlsx skill
+    - `skill: ms-office-suite:pdf` - invoke using fully qualified name
 
     Important:
     - Only use skills listed in <available_skills> below
@@ -33,7 +36,6 @@ description = """"
 
     <available_skills>
     {settings.default_skills_directory} contains the following skills:
-    {list of skills with short description}
     </available_skills>
 
 """
