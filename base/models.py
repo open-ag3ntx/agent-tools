@@ -1,3 +1,5 @@
+from idna.idnadata import scripts
+from markdown_it.rules_block import reference
 
 from pydantic import BaseModel
 from typing import Optional
@@ -50,3 +52,11 @@ class AskQuestionRequest(BaseModel):
     header: Annotated[str, "Very short label displayed as a chip/tag (max 12 chars). Examples: \"Auth method\", \"Library\", \"Approach\"."]
     options: Annotated[list[AskQuestionOption], "The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically."]
     multi_select: Annotated[bool, "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive."]
+
+
+class SkillToolResponse(BaseModel):
+    skill_name: Annotated[str, "The name of the skill that was called."]
+    instructions: Annotated[Optional[str], "Any special instructions or notes related to the skill execution."] = None
+    references: Annotated[Optional[list[str]], "List of reference links or documents relevant to the skill execution."] = None
+    assets: Annotated[Optional[dict], "Any assets (files, data) produced or used by the skill."] = None
+    scripts: Annotated[Optional[dict], "Any scripts or code snippets generated or utilized by the skill."] = None
