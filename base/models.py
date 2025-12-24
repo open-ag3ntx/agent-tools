@@ -56,6 +56,7 @@ class AskQuestionRequest(BaseModel):
 
 class SkillToolResponse(BaseModel):
     skill_name: Annotated[str, "The name of the skill that was called."]
+    exists: Annotated[bool, "Indicates whether the specified skill exists or was found."] = True
     instructions: Annotated[Optional[str], "Any special instructions or notes related to the skill execution."] = None
     references: Annotated[Optional[list[str]], "List of reference links or documents relevant to the skill execution."] = None
     assets: Annotated[Optional[dict], "Any assets (files, data) produced or used by the skill."] = None

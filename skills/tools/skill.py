@@ -5,14 +5,40 @@ from typing import Annotated
 import os
 import yaml
 
+__skills: list[dict] = []
 
 async def call_skill(
     skill_name: Annotated[str, "The name of the skill to be called"],
 ) -> SkillToolResponse:
     
-    # Implementation will be handled by the agent framework
+    skill = next((s for s in __skills if s.get('name') == skill_name), None)
+    if not skill:   
+        return SkillToolResponse(
+            exists=False,
+            skill_name=skill_name,
+        )
+    skill_content: str | None = None
+    with open(os.path.join(settings.default_skills_directory, skill_name, 'SKILLS.md'), 'r', encoding='utf-8-sig') as f:
+        skill_content = f.read()
+    dirs = os.listdir(os.path.join(settings.default_skills_directory, skill_name))
+    references = []
+    scripts = {}
+    assets = {}
+    for d in dirs:
+        if d == 'references':
+            references = os.listdir(os.path.join(settings.default_skills_directory, skill_name, d))
+        elif d == 'scripts':
+            scripts = {f: os.path.join(settings.default_skills_directory, skill_name, d, f) for f in os.listdir(os.path.join(settings.default_skills_directory, skill_name, d))}
+        elif d == 'assets':
+            assets = {f: os.path.join(settings.default_skills_directory, skill_name, d, f) for f in os.listdir(os.path.join(settings.default_skills_directory, skill_name, d))}
+
     return SkillToolResponse(
         skill_name=skill_name,
+        exists=True,
+        instructions=skill_content,
+        references=references,
+        scripts=scripts,
+        assets=assets
     )
 
 def extract_front_matter(file_path) -> dict | None:
@@ -36,19 +62,7 @@ def extract_front_matter(file_path) -> dict | None:
     return None
 
 
-def get_skill_tool_description() -> str:
-    skills: list[dict] = []
-    for d in os.listdir(settings.default_skills_directory):
-        if d.startswith('.'):
-            continue
-            
-        file_path = os.path.join(settings.default_skills_directory, d, 'SKILLS.md')
-        
-        if os.path.isfile(file_path):
-            data = extract_front_matter(file_path)
-            if data:
-                skills.append(data)
-
+def get_skill_tool_description(skills: list[dict]) -> str:
     description = f"""
         Execute a skill within the main conversation
 
@@ -80,8 +94,20 @@ def get_skill_tool_description() -> str:
     return description
 
 
-call_skill_tool: StructuredTool = StructuredTool.from_function(
-    func=call_skill,
-    name="skill",
-    description=get_skill_tool_description()
-)
+def setup_skills_tool() -> StructuredTool:
+    skills: list[dict] = []
+    for d in os.listdir(settings.default_skills_directory):
+        if d.startswith('.'):
+            continue
+        file_path = os.path.join(settings.default_skills_directory, d, 'SKILLS.md')
+        if os.path.isfile(file_path):
+            data = extract_front_matter(file_path)
+            if data:
+                skills.append(data)
+    global __skills
+    __skills = skills
+    return StructuredTool.from_function(
+        func=call_skill,
+        name="skill",
+        description=get_skill_tool_description(skills)
+    )
