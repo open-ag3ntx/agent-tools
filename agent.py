@@ -29,7 +29,8 @@ tools = [
     *llm_client.get_todo_tools(),
     *llm_client.get_bash_tools(),
     *llm_client.get_interactive_tools(),
-    *llm_client.get_subagent_tool()
+    *llm_client.get_subagent_tool(),
+    *llm_client.get_skill_tool(),
 ]
 
 cache_config = {

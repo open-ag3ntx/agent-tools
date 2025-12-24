@@ -7,7 +7,7 @@ import yaml
 
 __skills: list[dict] = []
 
-async def call_skill(
+def __call_skill(
     skill_name: Annotated[str, "The name of the skill to be called"],
 ) -> SkillToolResponse:
     
@@ -41,7 +41,7 @@ async def call_skill(
         assets=assets
     )
 
-def extract_front_matter(file_path) -> dict | None:
+def __extract_front_matter(file_path) -> dict | None:
     """Extract YAML front matter from markdown file."""
     with open(file_path, 'r', encoding='utf-8-sig') as f:
         lines = f.readlines()
@@ -62,7 +62,7 @@ def extract_front_matter(file_path) -> dict | None:
     return None
 
 
-def get_skill_tool_description(skills: list[dict]) -> str:
+def __get_skill_tool_description(skills: list[dict]) -> str:
     description = f"""
         Execute a skill within the main conversation
 
@@ -101,13 +101,13 @@ def setup_skills_tool() -> StructuredTool:
             continue
         file_path = os.path.join(settings.default_skills_directory, d, 'SKILLS.md')
         if os.path.isfile(file_path):
-            data = extract_front_matter(file_path)
+            data = __extract_front_matter(file_path)
             if data:
                 skills.append(data)
     global __skills
     __skills = skills
     return StructuredTool.from_function(
-        func=call_skill,
+        func=__call_skill,
         name="skill",
-        description=get_skill_tool_description(skills)
+        description=__get_skill_tool_description(skills)
     )

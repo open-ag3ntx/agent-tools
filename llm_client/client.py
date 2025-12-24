@@ -1,3 +1,4 @@
+from aiohttp_jinja2 import setup
 from dotenv import load_dotenv
 from typing import Annotated
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,6 +12,7 @@ from interactive.tools.ask_question import ask_question
 from subagents.tools.subagent import subagent
 import os
 from loguru import logger
+from skills.tools.skill import setup_skills_tool
 
 
 
@@ -64,6 +66,9 @@ class LLMClient:
     
     def get_subagent_tool(self):
         return [subagent]
+    
+    def get_skill_tool(self):
+        return [setup_skills_tool()]
 
 
 client = LLMClient()

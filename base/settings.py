@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     # is git repo    
     is_git_repo: bool = os.path.exists(f"{present_working_directory}/.git")
 
+    default_skills_directory: str = f"{present_working_directory}/skills"
+
 
 settings = Settings()
 
