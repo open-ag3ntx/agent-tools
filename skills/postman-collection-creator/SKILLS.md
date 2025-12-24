@@ -1,211 +1,471 @@
-# Postman Collection Creator - SKILLS Document
+---
+name: postman-collection-creator
+description: Create, organize, and maintain comprehensive Postman collections for API testing and documentation. Use when building API test suites, documenting REST APIs, setting up automated tests with pre-request and test scripts, managing environments and variables, or creating collections for CI/CD integration. Includes expertise in request configuration, JavaScript test automation, data-driven testing, and collection best practices.
+license: Apache-2.0
+compatibility: Requires Postman Desktop or Web application. Newman CLI recommended for CI/CD integration.
+metadata:
+  author: korade-krushna
+  version: "1.0"
+  category: api-testing
+---
+
+# Postman Collection Creator Skill
+
+This skill provides comprehensive guidance for creating, organizing, and maintaining high-quality Postman collections for API testing, documentation, and automation.
+
+## When to Use This Skill
+
+Use this skill when you need to:
+- Create new Postman collections from scratch or API specifications
+- Organize existing collections with proper folder structures
+- Write pre-request and test scripts using JavaScript
+- Set up environment and variable management
+- Implement data-driven testing with CSV/JSON files
+- Integrate collections into CI/CD pipelines using Newman
+- Document API endpoints with examples and descriptions
+- Create mock servers for API development
+
+## Core Principles
+
+### 1. Collection Organization
+- Use hierarchical folder structures that mirror API resource organization
+- Group related endpoints logically (by feature, resource type, or workflow)
+- Name folders and requests clearly and consistently
+- Keep collections focused on a single API or related set of endpoints
+
+### 2. Naming Conventions
+Follow consistent naming patterns:
+- **Collections**: `[API Name] - [Purpose]` (e.g., "User Management API - V2")
+- **Folders**: Use title case, group by resource (e.g., "User Management", "Authentication")
+- **Requests**: `[HTTP Method] [Resource]` (e.g., "GET User by ID", "POST Create User")
+- **Variables**: Use snake_case for environment variables (e.g., `base_url`, `auth_token`)
+
+### 3. Progressive Disclosure
+Structure collections for efficient navigation:
+- Add collection-level descriptions with overview and prerequisites
+- Document each folder's purpose
+- Include detailed request descriptions with parameters and expected responses
+- Provide example responses for success and error scenarios
+
+## Creating Collections
+
+### Basic Collection Structure
+
+```
+API Collection Name/
+├── 📁 Authentication
+│   ├── POST Login
+│   ├── POST Refresh Token
+│   └── POST Logout
+├── 📁 Users
+│   ├── GET List Users
+│   ├── GET User by ID
+│   ├── POST Create User
+│   ├── PUT Update User
+│   └── DELETE Delete User
+└── 📁 Admin
+    └── GET System Health
+```
+
+### Request Configuration Checklist
+
+For each request, configure:
+1. **Method and URL**: Correct HTTP method with parameterized URLs
+2. **Headers**: Content-Type, Authorization, custom headers
+3. **Query Parameters**: Document required vs optional parameters
+4. **Request Body**: Provide example payloads in proper format
+5. **Authorization**: Set up auth at collection or request level
+6. **Pre-request Scripts**: Set up dynamic data or authentication
+7. **Tests**: Add assertions for status codes, response structure, data validation
+
+### Environment Management
+
+Create environments for different deployment stages:
+
+```javascript
+// Development Environment
+{
+  "base_url": "https://dev-api.example.com",
+  "api_key": "dev_key_123",
+  "timeout": "5000"
+}
+
+// Production Environment
+{
+  "base_url": "https://api.example.com",
+  "api_key": "prod_key_456",
+  "timeout": "10000"
+}
+```
+
+## Writing Test Scripts
+
+### Essential Test Patterns
+
+**1. Status Code Validation**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+```
+
+**2. Response Time Testing**
+```javascript
+pm.test("Response time is less than 500ms", function () {
+    pm.expect(pm.response.responseTime).to.be.below(500);
+});
+```
+
+**3. JSON Schema Validation**
+```javascript
+const schema = {
+    type: "object",
+    required: ["id", "name", "email"],
+    properties: {
+        id: { type: "number" },
+        name: { type: "string" },
+        email: { type: "string" }
+    }
+};
+
+pm.test("Response matches schema", function () {
+    pm.response.to.have.jsonSchema(schema);
+});
+```
+
+**4. Extracting and Setting Variables**
+```javascript
+// Parse response
+const response = pm.response.json();
+
+// Save data for subsequent requests
+pm.environment.set("user_id", response.id);
+pm.environment.set("auth_token", response.token);
+```
+
+**5. Response Body Assertions**
+```javascript
+pm.test("User email is correct", function () {
+    const data = pm.response.json();
+    pm.expect(data.email).to.eql("user@example.com");
+});
+
+pm.test("Response has required fields", function () {
+    const data = pm.response.json();
+    pm.expect(data).to.have.property("id");
+    pm.expect(data).to.have.property("created_at");
+});
+```
+
+### Pre-request Script Patterns
+
+**1. Generate Dynamic Values**
+```javascript
+// Set timestamp
+pm.environment.set("timestamp", new Date().toISOString());
+
+// Generate random data
+pm.environment.set("random_email", `user${Math.random().toString(36).substring(7)}@test.com`);
+pm.environment.set("uuid", pm.variables.replaceIn("{{$guid}}"));
+```
+
+**2. Set Up Authentication**
+```javascript
+// Check if token exists and is valid
+const token = pm.environment.get("auth_token");
+const tokenExpiry = pm.environment.get("token_expiry");
+
+if (!token || Date.now() > tokenExpiry) {
+    // Token missing or expired - refresh it
+    pm.sendRequest({
+        url: pm.environment.get("base_url") + "/auth/refresh",
+        method: "POST",
+        header: {
+            "Content-Type": "application/json"
+        },
+        body: {
+            mode: "raw",
+            raw: JSON.stringify({
+                refresh_token: pm.environment.get("refresh_token")
+            })
+        }
+    }, function (err, res) {
+        if (!err) {
+            const data = res.json();
+            pm.environment.set("auth_token", data.access_token);
+            pm.environment.set("token_expiry", Date.now() + 3600000); // 1 hour
+        }
+    });
+}
+```
+
+## Data-Driven Testing
+
+### Using CSV Files
+
+Create a CSV file with test data:
+```csv
+username,password,expected_status
+valid_user,correct_pass,200
+invalid_user,any_pass,401
+valid_user,wrong_pass,401
+```
+
+In your request:
+1. Use variables: `{{username}}` and `{{password}}`
+2. Add test for expected outcome:
+```javascript
+pm.test("Status matches expected", function () {
+    const expectedStatus = pm.iterationData.get("expected_status");
+    pm.response.to.have.status(parseInt(expectedStatus));
+});
+```
+
+3. Run with Collection Runner using the CSV file
+
+## Documentation Best Practices
+
+### Collection Description Template
+
+```markdown
+# [API Name] Collection
 
 ## Overview
-This document outlines the skills required for creating, managing, and maintaining Postman collections for API testing and documentation following OpenSkills standards.
+Brief description of the API and this collection's purpose.
 
----
+## Prerequisites
+- Valid API key (obtain from: https://...)
+- Base URL configured in environment
+- Dependencies: [list any required setups]
 
-## Core Technical Skills
+## Quick Start
+1. Import this collection
+2. Set up environment variables
+3. Run the Authentication folder first
+4. Execute requests in order
 
-### API Development & Testing
-- **RESTful API Design Principles** - Understanding of REST architecture, HTTP methods, status codes, and API best practices
-- **HTTP Protocol** - Deep knowledge of HTTP/HTTPS, headers, request/response cycles, authentication methods
-- **API Testing Methodologies** - Ability to create comprehensive test suites including functional, integration, and regression tests
-- **JSON/XML Data Formats** - Proficiency in working with and validating API data formats
-- **API Authentication & Authorization** - Experience with OAuth 2.0, API keys, Bearer tokens, Basic Auth, JWT
+## Authentication
+Description of auth method and how it's handled in this collection.
 
-### Postman Platform
-- **Postman Collection Structure** - Creating organized, maintainable collection hierarchies with folders and sub-folders
-- **Request Configuration** - Setting up requests with proper methods, URLs, parameters, headers, and body content
-- **Environment & Variable Management** - Creating and managing environment variables, global variables, collection variables
-- **Pre-request Scripts** - Writing JavaScript to set up test data, generate dynamic values, manipulate variables
-- **Test Scripts (Chai Assertions)** - Writing automated tests using Postman's test framework and Chai assertion library
-- **Collection Runner** - Configuring and executing collection runs with data files and iterations
-- **Postman Monitors** - Setting up scheduled collection runs for continuous monitoring
-- **Mock Servers** - Creating mock endpoints for API development and testing
+## Rate Limits
+- X requests per minute
+- Y requests per day
 
-### Scripting & Programming
-- **JavaScript** - Writing scripts for test automation, data manipulation, and workflow logic
-- **Data-Driven Testing** - Using CSV/JSON files for parameterized test execution
-- **Dynamic Variables** - Utilizing Postman's dynamic variables ($guid, $timestamp, $randomInt, etc.)
-- **Response Parsing** - Extracting and validating data from API responses
-- **Error Handling** - Implementing robust error handling in test scripts
+## Support
+Contact: support@example.com
+Documentation: https://docs.example.com
+```
 
----
+### Request Description Template
 
-## Documentation Skills
+```markdown
+# [Request Name]
 
-### Technical Writing
-- **API Documentation** - Creating clear, comprehensive documentation for API endpoints
-- **Collection Description** - Writing detailed collection overviews, prerequisites, and setup instructions
-- **Request Documentation** - Documenting each request with purpose, parameters, expected responses
-- **Example Responses** - Providing representative response examples for different scenarios
-- **Markdown Formatting** - Using Markdown for structured, readable documentation
+## Description
+What this endpoint does and when to use it.
 
-### Knowledge Transfer
-- **Onboarding Materials** - Creating guides for team members to use collections effectively
-- **Best Practices Documentation** - Establishing and documenting collection standards and conventions
-- **Change Logs** - Maintaining documentation of collection updates and modifications
+## Parameters
+- `id` (path, required): User ID
+- `include` (query, optional): Related resources to include
+- `fields` (query, optional): Specific fields to return
 
----
+## Request Body
+```json
+{
+  "name": "string (required)",
+  "email": "string (required, format: email)",
+  "role": "string (optional, enum: [admin, user])"
+}
+```
 
-## Quality Assurance Skills
+## Success Response (200)
+```json
+{
+  "id": 123,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
 
-### Testing Strategy
-- **Test Coverage Planning** - Identifying test scenarios and ensuring comprehensive coverage
-- **Positive & Negative Testing** - Creating tests for both successful and error scenarios
-- **Boundary Testing** - Testing edge cases and data limits
-- **Status Code Validation** - Verifying correct HTTP status codes for all scenarios
-- **Response Time Testing** - Implementing performance benchmarks and assertions
+## Error Responses
+- 400: Invalid request body
+- 401: Unauthorized
+- 404: User not found
+- 422: Validation error
+```
 
-### Validation Techniques
-- **Schema Validation** - Validating response structure against JSON schemas
-- **Data Type Verification** - Ensuring response data types match specifications
-- **Response Body Assertions** - Verifying specific values and data in responses
-- **Header Validation** - Checking response headers for correct content types, caching, etc.
+## CI/CD Integration
 
----
+### Newman Command Examples
 
-## Collaboration & Workflow Skills
+**Run collection with environment:**
+```bash
+newman run collection.json -e environment.json
+```
 
-### Version Control
-- **Git Integration** - Managing collections in version control systems
-- **Branching Strategies** - Understanding collection versioning and branching approaches
-- **Merge Conflict Resolution** - Handling conflicts when multiple team members update collections
+**Run with data file:**
+```bash
+newman run collection.json -d test-data.csv --iteration-count 10
+```
 
-### Team Collaboration
-- **Postman Workspaces** - Using team workspaces for collaboration
-- **Collection Sharing** - Distributing collections via links, exports, and workspace sharing
-- **Code Reviews** - Reviewing collection changes and test scripts
-- **Cross-functional Communication** - Working with developers, QA engineers, and product teams
+**Generate HTML report:**
+```bash
+newman run collection.json -r html --reporter-html-export report.html
+```
 
-### CI/CD Integration
-- **Newman CLI** - Running Postman collections via command line
-- **CI/CD Pipeline Integration** - Integrating collections into Jenkins, GitLab CI, GitHub Actions, etc.
-- **Automated Reporting** - Generating and distributing test execution reports
-- **Build Failure Management** - Configuring appropriate failure criteria for pipelines
+**With custom timeout and iterations:**
+```bash
+newman run collection.json \
+  -e prod.json \
+  --timeout-request 10000 \
+  --iteration-count 5 \
+  --bail
+```
 
----
+### Jenkins Pipeline Example
 
-## Domain Knowledge
+```groovy
+stage('API Tests') {
+    steps {
+        sh 'newman run collection.json -e ${ENV}.json -r junit,cli --reporter-junit-export results.xml'
+    }
+    post {
+        always {
+            junit 'results.xml'
+        }
+    }
+}
+```
 
-### API Concepts
-- **Pagination** - Understanding and testing paginated API responses
-- **Rate Limiting** - Handling and testing API rate limits
-- **Webhooks** - Testing webhook implementations and callbacks
-- **GraphQL** - Creating collections for GraphQL APIs (if applicable)
-- **SOAP/XML APIs** - Working with SOAP-based services (if applicable)
+## Common Patterns & Solutions
 
-### Security Testing
-- **Authentication Testing** - Validating authentication flows and token management
-- **Authorization Testing** - Verifying proper access controls and permissions
-- **Security Headers** - Checking for security-related headers (CORS, CSP, etc.)
-- **Sensitive Data Handling** - Properly managing secrets, tokens, and credentials
+### Request Chaining
+```javascript
+// Request 1: Create resource
+pm.test("Resource created", function () {
+    const response = pm.response.json();
+    pm.environment.set("resource_id", response.id);
+});
 
----
+// Request 2: Use the resource_id
+// URL: {{base_url}}/resources/{{resource_id}}
+```
 
-## Organizational Skills
+### Handling Pagination
+```javascript
+pm.test("Handle pagination", function () {
+    const response = pm.response.json();
+    
+    // Save next page token
+    if (response.next_page) {
+        pm.environment.set("next_page_token", response.next_page);
+    }
+    
+    // Test pagination metadata
+    pm.expect(response).to.have.property("total_count");
+    pm.expect(response).to.have.property("page_size");
+});
+```
 
-### Collection Management
-- **Naming Conventions** - Establishing consistent naming patterns for requests and folders
-- **Folder Organization** - Structuring collections logically by feature, resource, or workflow
-- **Collection Maintenance** - Regular updates to keep collections synchronized with API changes
-- **Cleanup & Refactoring** - Removing deprecated requests and optimizing collection structure
+### Error Handling in Scripts
+```javascript
+try {
+    const response = pm.response.json();
+    pm.test("Response parsed successfully", function () {
+        pm.expect(response).to.be.an("object");
+    });
+    
+    // Your test logic here
+    
+} catch (e) {
+    pm.test("Failed to parse response: " + e.message, function () {
+        pm.expect.fail();
+    });
+}
+```
 
-### Process & Standards
-- **Standard Operating Procedures** - Following and establishing team procedures
-- **Quality Gates** - Implementing checkpoints for collection quality
-- **Dependency Management** - Managing request dependencies and execution order
-- **Reusability** - Creating reusable components and avoiding duplication
+## Quality Checklist
 
----
+Before sharing or deploying a collection, verify:
 
-## Soft Skills
+- [ ] All requests have clear, consistent names
+- [ ] Environment variables are used instead of hardcoded values
+- [ ] Sensitive data (API keys, passwords) are in environment variables, not in collection
+- [ ] Each request has appropriate tests (minimum: status code)
+- [ ] Collection and folders have descriptive documentation
+- [ ] Request examples show both success and error scenarios
+- [ ] Pre-request scripts handle authentication and dynamic data
+- [ ] Variables are cleaned up (don't leave test data in environment)
+- [ ] Collection can run in sequence successfully
+- [ ] Authorization is configured at appropriate level (collection vs request)
 
-### Problem-Solving
-- **Debugging** - Troubleshooting failing tests and requests
-- **Root Cause Analysis** - Identifying underlying issues in API implementations
-- **Critical Thinking** - Analyzing API behavior and identifying test gaps
+## Troubleshooting
 
-### Attention to Detail
-- **Accuracy** - Ensuring requests and tests are precisely configured
-- **Consistency** - Maintaining uniform standards across collections
-- **Thoroughness** - Creating comprehensive test coverage
+### Common Issues
 
-### Adaptability
-- **Learning Agility** - Quickly adapting to new APIs and technologies
-- **Tool Updates** - Staying current with Postman platform updates and features
-- **Methodology Evolution** - Adapting to changing testing approaches and requirements
+**Problem**: Tests failing intermittently
+- Check response times - API might be slow
+- Verify test assertions aren't too strict
+- Look for race conditions in chained requests
 
----
+**Problem**: Variables not persisting
+- Ensure you're using `pm.environment.set()` not `pm.variables.set()`
+- Check variable scope (collection vs environment vs global)
+- Verify environment is selected in Postman
 
-## Proficiency Levels
+**Problem**: Authentication failing
+- Check token expiration and refresh logic
+- Verify auth is set at correct level (collection/folder/request)
+- Ensure environment variables are populated
 
-### Entry Level
-- Basic understanding of HTTP and REST APIs
-- Ability to create simple requests and collections
-- Basic test script writing
-- Documentation of individual requests
+**Problem**: Scripts not executing
+- Check for JavaScript syntax errors in console
+- Verify script is in correct section (Pre-request vs Tests)
+- Check for console.log() output for debugging
 
-### Intermediate Level
-- Advanced scripting and test automation
-- Environment and variable management
-- Collection organization and best practices
-- CI/CD integration experience
+## Advanced Topics
 
-### Advanced Level
-- Complex workflow automation
-- Custom library development for reusable functions
-- Performance testing and optimization
-- Mentoring and establishing team standards
-- Strategic test coverage planning
+### Custom JavaScript Libraries
 
----
+You can use these built-in libraries in scripts:
+- `crypto-js`: For encryption and hashing
+- `moment`: For date manipulation
+- `lodash`: For utility functions
+- `cheerio`: For HTML parsing (in Newman only)
 
-## Tools & Technologies
+Example:
+```javascript
+const CryptoJS = require('crypto-js');
+const signature = CryptoJS.HmacSHA256(message, secret);
+pm.environment.set('signature', signature.toString());
+```
 
-### Required
-- Postman Desktop/Web Application
-- Newman (Postman CLI runner)
-- JavaScript/Node.js
-- Git version control
+### Mock Servers
 
-### Beneficial
-- Jenkins, GitLab CI, GitHub Actions, or similar CI/CD tools
-- JSON Schema validators
-- API specification tools (OpenAPI/Swagger)
-- Jira or similar issue tracking systems
-- Confluence or similar documentation platforms
+Create mock endpoints for development:
+1. Set up examples with desired responses
+2. Create mock server from collection
+3. Use mock server URL in development environment
+4. Switch to real API when ready
 
----
+### Monitoring
 
-## Continuous Learning
+Set up monitors for:
+- Health check endpoints (run every 5 minutes)
+- Critical user flows (run hourly)
+- Data validation checks (run daily)
 
-### Recommended Resources
-- Postman Learning Center and official documentation
-- API testing certification programs
-- JavaScript and Node.js courses
-- REST API design and best practices materials
-- Community forums and user groups
+Configure alerts for failures and performance degradation.
 
-### Skill Development Areas
-- Advanced JavaScript patterns for testing
-- Performance testing methodologies
-- Security testing practices
-- API design and architecture principles
-- DevOps and CI/CD best practices
+## Resources and References
 
----
+For additional information:
+- See `references/AUTHENTICATION.md` for detailed auth patterns
+- See `references/TESTING_PATTERNS.md` for advanced test scenarios
+- See `scripts/` directory for utility scripts
+- Check Postman Learning Center: https://learning.postman.com
 
-## Success Metrics
+## Version History
 
-- **Collection Quality**: Well-organized, documented, and maintainable collections
-- **Test Coverage**: Comprehensive testing of API functionality and edge cases
-- **Automation Success**: Reliable execution in CI/CD pipelines with minimal false positives
-- **Documentation Quality**: Clear, accurate documentation that enables self-service
-- **Team Adoption**: High usage and satisfaction among team members
-- **Defect Detection**: Early identification of API issues through automated testing
-
----
-
-*This SKILLS document follows OpenSkills standards for competency modeling and should be regularly updated to reflect evolving practices and platform capabilities.*
+- 1.0: Initial skill creation with core collection management capabilities
