@@ -7,7 +7,7 @@ COLLECTION=${1:-"collection.json"}
 ENVIRONMENT=${2:-"environment.json"}
 OUTPUT_DIR=${3:-"./newman-results"}
 
-echo "🚀 Running Newman tests..."
+echo "Running Newman tests..."
 echo "Collection: $COLLECTION"
 echo "Environment: $ENVIRONMENT"
 
@@ -25,9 +25,9 @@ newman run "$COLLECTION" \
 
 # Check exit code
 if [ $? -eq 0 ]; then
-    echo "✅ All tests passed!"
-    echo "📊 Report: $OUTPUT_DIR/report.html"
+    echo "All tests passed!"
+    echo "Report: $OUTPUT_DIR/report.html"
 else
-    echo "❌ Tests failed!"
+    echo "Tests failed!"
     exit 1
 fi

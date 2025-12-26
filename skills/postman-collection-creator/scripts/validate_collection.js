@@ -11,7 +11,7 @@ function validateCollection(filePath) {
     
     // Check collection info
     if (!collection.info || !collection.info.name) {
-        issues.push('❌ Collection must have a name');
+        issues.push('Collection must have a name');
     }
     
     if (!collection.info || !collection.info.description) {
@@ -20,7 +20,7 @@ function validateCollection(filePath) {
     
     // Check items
     if (!collection.item || collection.item.length === 0) {
-        issues.push('❌ Collection has no items');
+        issues.push('Collection has no items');
     }
     
     // Validate each request
@@ -42,7 +42,7 @@ function validateItems(items, issues, depth = 0) {
         if (item.item) {
             // It's a folder
             if (!item.name) {
-                issues.push(`❌ Folder at depth ${depth} missing name`);
+                issues.push(`Folder at depth ${depth} missing name`);
             }
             validateItems(item.item, issues, depth + 1);
         } else if (item.request) {
@@ -54,11 +54,11 @@ function validateItems(items, issues, depth = 0) {
 
 function validateRequest(item, issues, depth) {
     if (!item.name) {
-        issues.push(`❌ Request at depth ${depth} missing name`);
+        issues.push(`Request at depth ${depth} missing name`);
     }
     
     if (!item.request.url) {
-        issues.push(`❌ Request "${item.name}" missing URL`);
+        issues.push(`Request "${item.name}" missing URL`);
     }
     
     // Check for hardcoded values
