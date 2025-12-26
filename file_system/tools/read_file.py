@@ -1,4 +1,7 @@
-from typing import Annotated, Optional
+from ty_extensions import Unknown
+from os import stat_result
+from numbers import Number
+from typing import Annotated, Optional, Literal
 import os
 
 from base.settings import settings
@@ -8,7 +11,7 @@ from base.models import BaseToolResult
 class ReadFileResult(BaseToolResult):
     content: Optional[str] = None
 
-FILE_SIZE_LIMIT = 10 * 1024 * 1024 # 100MB
+FILE_SIZE_LIMIT: Literal[10485760] = 10 * 1024 * 1024 # 100MB
 
 MAX_LINES_TO_READ = 2000
 MAX_LENGTH_OF_LINE = 2000
@@ -47,30 +50,30 @@ async def read_file(
                 success=False,
                 error="Could not read content of the file because it is not allowed to read files outside the present working directory"
             )
-        file_metadata = os.stat(file_path)
+        file_metadata: stat_result = os.stat(file_path)
         if file_metadata.st_size > FILE_SIZE_LIMIT:
             return ReadFileResult(
                 success=False,
                 error="Could not read content of the file because it is too large, the maximum size is 10MB"
             )
         
-        file_type = await get_file_type(file_path)
+        file_type: str = await get_file_type(file_path)
         if file_type != "text":
             return ReadFileResult(
                 success=False,
                 error="This file doesnt seem to be having text content, only files having text content can be read"
             )
         
-        file_content = await read_file_content(file_path)
+        file_content: str = await read_file_content(file_path)
         if len(file_content) == 0:
             return ReadFileResult(
                 success=True,
                 content="This file is empty"
             )
-        lines = file_content.split("\n")
+        lines: list[str] = file_content.split("\n")
         start_line = max(0, min(offset, len(lines) - 1))
-        end_line = min(start_line + limit, len(lines))
-        selected_lines = lines[start_line:end_line]
+        end_line: Unknown | int = min(start_line + limit, len(lines))
+        selected_lines: list[str] = lines[start_line:end_line]
 
         # truncate the lines to the maximum length of line but add ... to the end if it is truncated
         # add line numbers to the lines The line number prefix format is: spaces + line number + tab
