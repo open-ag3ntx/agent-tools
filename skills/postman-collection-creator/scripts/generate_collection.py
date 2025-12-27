@@ -40,7 +40,7 @@ def generate_collection_from_openapi(openapi_file: str, output_file: str):
     with open(output_file, 'w') as f:
         json.dump(collection, f, indent=2)
     
-    print(f"✅ Collection generated: {output_file}")
+    print(f"Collection generated: {output_file}")
 
 def create_folder(path: str, methods: Dict) -> Dict:
     """Create folder for API path"""

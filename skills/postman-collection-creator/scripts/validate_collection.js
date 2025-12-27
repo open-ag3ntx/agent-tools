@@ -15,7 +15,7 @@ function validateCollection(filePath) {
     }
     
     if (!collection.info || !collection.info.description) {
-        issues.push('⚠️  Collection should have a description');
+        issues.push('Collection should have a description');
     }
     
     // Check items
@@ -28,7 +28,7 @@ function validateCollection(filePath) {
     
     // Report results
     if (issues.length === 0) {
-        console.log('✅ Collection validation passed');
+        console.log('Collection validation passed');
         return true;
     } else {
         console.log('Collection validation issues:');
@@ -64,12 +64,12 @@ function validateRequest(item, issues, depth) {
     // Check for hardcoded values
     const url = JSON.stringify(item.request.url);
     if (url.includes('localhost') || url.includes('127.0.0.1')) {
-        issues.push(`⚠️  Request "${item.name}" has hardcoded localhost URL`);
+        issues.push(`Request "${item.name}" has hardcoded localhost URL`);
     }
     
     // Check for tests
     if (!item.event || !item.event.some(e => e.listen === 'test')) {
-        issues.push(`⚠️  Request "${item.name}" has no test scripts`);
+        issues.push(`Request "${item.name}" has no test scripts`);
     }
 }
 
