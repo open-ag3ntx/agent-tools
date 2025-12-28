@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 from base.models import GlobToolResult
 from base.settings import settings
 import glob as glob_lib
@@ -63,3 +63,11 @@ async def glob(
             success=False,
             error=f"Error searching for files: {str(e)}"
         )
+
+def display_glob(
+    pattern: str,
+    path: str,
+    exclude_dirs: Optional[list[str]] = None,
+) -> str:
+    """Generates a human-readable summary of the glob action."""
+    return f'Globbing {pattern} in directory: {path}'

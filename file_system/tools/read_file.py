@@ -1,4 +1,3 @@
-from ty_extensions import Unknown
 from os import stat_result
 from numbers import Number
 from typing import Annotated, Optional, Literal
@@ -72,7 +71,7 @@ async def read_file(
             )
         lines: list[str] = file_content.split("\n")
         start_line = max(0, min(offset, len(lines) - 1))
-        end_line: Unknown | int = min(start_line + limit, len(lines))
+        end_line: int = min(start_line + limit, len(lines))
         selected_lines: list[str] = lines[start_line:end_line]
 
         # truncate the lines to the maximum length of line but add ... to the end if it is truncated
@@ -92,3 +91,9 @@ async def read_file(
             error=f"Error reading file: {e}"
         )
     
+def display_read_file(file_path: str, limit: Optional[int] = None, offset: Optional[int] = None) -> str:
+    """Generates a human-readable summary of the read_file action."""
+    if limit is not None and offset is not None:
+        return f'Reading File {file_path}:{offset + 1}:{offset + limit}'
+    else:
+        return f'Reading File {file_path}'

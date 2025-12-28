@@ -47,3 +47,10 @@ def update_todo(
     todo.status = status
     return f"Todo {todo_id} updated to status '{status}' successfully."
 
+def display_update_todo(
+    task_group: str,
+    todo_id: int,
+    status: Literal["pending", "completed", "cancelled"],
+    ) -> str:
+    """Generates a human-readable summary of the update_todo action."""
+    return f'Updating Todo Item ID: {todo_id} in Task Group: {task_group} to Status: {status}'

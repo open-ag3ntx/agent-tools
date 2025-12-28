@@ -1,10 +1,11 @@
+from base.models import TodoItem
 from typing import Annotated
 from langchain_core.tools import tool
 from base.store import todo_store
 
 
 @tool
-def list_todos(task_group: Annotated[str, "The task_group of the todo item"]) -> str:
+def list_todos(task_group: Annotated[str, "The task_group of the todo item"]) -> dict[int, TodoItem] | str:
     """List all todos for a specific task_group to review progress and identify remaining work.
     
     This tool is critical for maintaining awareness of task status during long-running operations.
@@ -38,3 +39,15 @@ def list_todos(task_group: Annotated[str, "The task_group of the todo item"]) ->
         return "No todos found for this task_group. Create a todo first."
     return todos
 
+def display_list_todos(
+    task_group: str,
+    ) -> str:
+    """Generates a human-readable summary of the list_todos action."""
+    todo_str = ''
+    todos = todo_store.get(task_group, {})
+    if not todos:
+        return f'No todos found for task group: {task_group}'
+    for todo in todos.values():
+        status_icon = '- [x]' if todo.status == 'completed' else '- [ ]' if todo.status == 'cancelled' else '- [ ]'
+        todo_str += f'- {status_icon} [{todo.id}] {todo.title} ({todo.status})\n'
+    return f'Todo Items for Task Group: {task_group}\n{todo_str}'

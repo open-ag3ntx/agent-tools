@@ -29,7 +29,7 @@ class LLMClient:
         if model_provider == "google":
             self.__llm = ChatGoogleGenerativeAI(
                 model=model,
-                api_key=os.getenv("GOOGLE_API_KEY_V2"),
+                api_key=os.getenv("GOOGLE_API_KEY_V3"),
             )
         elif model_provider == "openrouter":
             self.__llm = ChatOpenAI(

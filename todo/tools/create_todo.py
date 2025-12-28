@@ -52,3 +52,14 @@ def create_todo(
         )
         todo_ids.append(todo_id)
     return f'Todos created successfully with IDs {todo_ids}'
+
+
+def display_create_todo(
+    titles: list[str],
+    task_group: str,
+    ) -> str:
+    """Generates a human-readable summary of the create_todo action."""
+    todos_str = '- [ ] '
+    for title in titles:
+        todos_str += f'- [ ] {title}\n'
+    return f'Creating Todo Items in Task Group: {task_group}\n{todos_str}'

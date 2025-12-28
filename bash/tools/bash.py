@@ -208,3 +208,12 @@ async def bash(
             command=command,
         )
 
+def display_bash(
+    command: str,
+    description: str,
+    timeout: int = settings.default_timeout,
+    run_in_background: Optional[bool] = False,
+    working_directory: Optional[str] = None,
+) -> str:
+    """Generates a human-readable summary of the bash action."""
+    return f'Executing Bash Command: {command} (Description: {description})'

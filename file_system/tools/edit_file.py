@@ -64,3 +64,12 @@ async def edit_file(
 
     except Exception as e:
         return EditFileResult(success=False, error=f"Error editing file: {e}")
+
+def display_edit_file(
+    file_path: str,
+    old_string: str,
+    new_string: str,
+    replace_all: bool = False,
+    ) -> str:
+    """Generates a human-readable summary of the edit_file action."""
+    return f'Editing File {file_path}'

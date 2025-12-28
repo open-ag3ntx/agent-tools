@@ -1,15 +1,27 @@
+from todo.tools.list_todos import display_list_todos
+import dis
+from todo.tools.update_todo import display_update_todo
+from todo.tools.create_todo import display_create_todo
+from bash.tools.bash import display_bash
+from bash.tools.grep import display_grep
+from bash.tools.glob import display_glob
 import datetime
 import os
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-from rich.console import Console
-from rich.markdown import Markdown
-from base.settings import settings as file_system_settings
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from rich.live import Live
+from rich.markdown import Markdown
+from rich.console import Console
+from base.settings import settings as file_system_settings
 from llm_client.client import client as llm_client
+from file_system.tools.read_file import display_read_file
+from file_system.tools.write_file import display_write_file
+from file_system.tools.edit_file import display_edit_file
 
 load_dotenv()
+
+console = Console()
 
 
 def create_prompt():
@@ -33,10 +45,6 @@ tools = [
     *llm_client.get_skill_tool(),
 ]
 
-cache_config = {
-    
-}
-
 llm = llm_client.get_new_instance()
 
 agent = create_agent(
@@ -45,57 +53,6 @@ agent = create_agent(
     system_prompt=create_prompt()
 )
 
-console = Console()
-
-def print_message(msg):
-    """Pretty print a message with markdown formatting for text content."""
-    if isinstance(msg, HumanMessage):
-        print("================================ Human Message =================================")
-        print(msg.content)
-    elif isinstance(msg, ToolMessage):
-        print("================================= Tool Message =================================")
-        print(msg.content)
-    elif isinstance(msg, AIMessage):
-        print("================================== AI Message ==================================")
-        
-        # Handle tool calls
-        if msg.tool_calls:
-            print("Tool Calls:")
-            for tool_call in msg.tool_calls:
-                print(f"  {tool_call['name']} ({tool_call['id']})")
-                print(f"  Args:")
-                for key, value in tool_call['args'].items():
-                    # Truncate long values
-                    value_str = str(value)
-                    if len(value_str) > 100:
-                        value_str = value_str[:100] + "..."
-                    print(f"    {key}: {value_str}")
-        
-        # Handle text content
-        content = msg.content
-        if content:
-            # Content can be a string or a list of content blocks
-            if isinstance(content, list):
-                for block in content:
-                    if isinstance(block, dict) and block.get('type') == 'text':
-                        text = block.get('text', '')
-                        if text:
-                            console.print(Markdown(text))
-                        elif text:
-                            print(text)
-                    elif isinstance(block, str):
-                        if block:
-                            console.print(Markdown(block))
-                        else:
-                            print(block)
-            elif isinstance(content, str) and content:
-                if content:
-                    console.print(Markdown(content))
-                else:
-                    print(content)
-    else:
-        msg.pretty_print()
-
 
 def get_multiline_input(prompt: str = "You: ") -> str:
     """
@@ -103,7 +60,7 @@ def get_multiline_input(prompt: str = "You: ") -> str:
     - Single line: type and press Enter
     - Multiple lines: keep typing, press Enter twice (empty line) to submit
     """
-    print(prompt, end="", flush=True)
+    console.print(prompt, end="")
     lines = []
     
     while True:
@@ -124,43 +81,114 @@ def get_multiline_input(prompt: str = "You: ") -> str:
     
     return "\n".join(lines)
 
+
 async def main():
-    print("🤖 AI Coding Agent Ready.")
-    print("   Type 'exit' to quit.")
-    print("   For multiline input, press Enter twice to submit.\n")
+    console.print("AI Coding Agent Ready. Type 'exit' to quit.\n")
     
-    # Maintain conversation history for multi-turn conversations
     messages = []
     
     while True:
         try:
             user_input = get_multiline_input("\nYou: ")
             if user_input.lower() == "exit":
-                print("Goodbye!")
+                console.print("Goodbye!")
                 break
             if not user_input.strip():
                 continue
             
-            # Add user message to history
             messages.append(("user", user_input))
             
-            # Track which messages we've already printed
             printed_count = 0
+            accumulated_content = ""
+            ai_started = False
+            last_ai_message_index = -1  # Track which AI message we're currently streaming
             
-            async for chunk in agent.astream({
-                "messages": messages
-            }, stream_mode="values"):
-                # Print all new messages (intermediate steps)
-                all_messages = chunk["messages"]
-                for msg in all_messages[printed_count:]:
-                    print_message(msg)
-                printed_count = len(all_messages)
+            with Live(console=console, refresh_per_second=10, auto_refresh=True) as live:
+                async for chunk in agent.astream({
+                    "messages": messages
+                }, stream_mode="values"):
+                    all_messages = chunk["messages"]
+                    
+                    for idx, msg in enumerate(all_messages[printed_count:], start=printed_count):
+                        if isinstance(msg, HumanMessage):
+                            # User messages already displayed
+                            pass
+                        
+                        elif isinstance(msg, ToolMessage):
+                            # Tool results handled elsewhere
+                            pass
+                        
+                        elif isinstance(msg, AIMessage):
+                            # Check if this is a new AI message (reset accumulated content)
+                            if idx != last_ai_message_index:
+                                accumulated_content = ""
+                                ai_started = False
+                                last_ai_message_index = idx
+                            
+                            # Handle tool calls
+                            if msg.tool_calls:
+                                # print(msg.tool_calls)
+                                for tool_call in msg.tool_calls:
+                                    match tool_call["name"]:
+                                        case "read_file":
+                                            summary = display_read_file(**tool_call["args"])
+                                        case "write_file":
+                                            summary = display_write_file(**tool_call["args"])
+                                        case "edit_file":
+                                            summary = display_edit_file(**tool_call["args"])
+                                        case 'glob':
+                                            summary = display_glob(**tool_call["args"])
+                                        case 'grep':
+                                            summary = display_grep(**tool_call["args"])   
+                                        case 'bash':
+                                            summary = display_bash(**tool_call["args"])
+                                        case 'create_todo': 
+                                            summary = display_create_todo(**tool_call["args"])
+                                        case 'update_todo':
+                                            summary = display_update_todo(**tool_call["args"])
+                                        case 'list_todos':
+                                            summary: str = display_list_todos(**tool_call["args"])
+                                        case _:
+                                            summary = f'[Tool: {tool_call["name"]}]'
+                                    # Display tool execution outside of Live context
+                                    live.stop()
+                                    console.print(f"[bold orange]**AI:**[/] {summary}")
+                                    live.start()
+                            
+                            # Handle text content
+                            content = msg.content
+                            if content:
+                                if not ai_started:
+                                    ai_started = True
+                                
+                                # Build the complete content from this message
+                                new_content = ""
+                                if isinstance(content, list):
+                                    for block in content:
+                                        if isinstance(block, dict) and block.get('type') == 'text':
+                                            text = block.get('text', '')
+                                            if text:
+                                                new_content += text
+                                        elif isinstance(block, str) and block:
+                                            new_content += block
+                                elif isinstance(content, str):
+                                    new_content = content
+                                
+                                # Only update if content changed
+                                if new_content != accumulated_content:
+                                    accumulated_content = new_content
+                                    # Update live display with markdown
+                                    if accumulated_content:
+                                        live.update(Markdown(f"**AI:** {accumulated_content}"))
+                                        accumulated_content = None
+                    
+                    printed_count = len(all_messages)
             
-            # Update messages with the final state (includes all AI responses and tool calls)
+            console.print()  # Newline after streaming
             messages = chunk["messages"]
             
         except KeyboardInterrupt:
-            print("\nGoodbye!")
+            console.print("\nGoodbye!")
             break
 
 

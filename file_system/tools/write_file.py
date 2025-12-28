@@ -63,3 +63,11 @@ async def write_file(
 
     except Exception as e:
         return WriteFileResult(success=False, error=f"Error writing file: {e}")
+
+
+def display_write_file(
+    file_path: str,
+    content: str,
+    ) -> str:
+    """Generates a human-readable summary of the write_file action."""
+    return f'Writing File {file_path}'
