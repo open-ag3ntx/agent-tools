@@ -150,18 +150,15 @@ async def main():
                                             summary: str = display_list_todos(**tool_call["args"])
                                         case _:
                                             summary = f'[Tool: {tool_call["name"]}]'
-                                    # Display tool execution outside of Live context
                                     live.stop()
                                     console.print(f"[bold orange]**AI:**[/] {summary}")
                                     live.start()
                             
-                            # Handle text content
                             content = msg.content
                             if content:
                                 if not ai_started:
                                     ai_started = True
                                 
-                                # Build the complete content from this message
                                 new_content = ""
                                 if isinstance(content, list):
                                     for block in content:
