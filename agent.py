@@ -108,6 +108,8 @@ async def main():
                     "messages": messages
                 }, stream_mode="values"):
                     all_messages = chunk["messages"]
+
+                    print(all_messages)
                     
                     for idx, msg in enumerate(all_messages[printed_count:], start=printed_count):
                         if isinstance(msg, HumanMessage):
