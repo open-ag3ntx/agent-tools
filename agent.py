@@ -131,21 +131,21 @@ async def main():
                                 for tool_call in msg.tool_calls:
                                     match tool_call["name"]:
                                         case "read_file":
-                                            summary = display_read_file(**tool_call["args"])
+                                            summary: str = display_read_file(**tool_call["args"])
                                         case "write_file":
-                                            summary = display_write_file(**tool_call["args"])
+                                            summary: str = display_write_file(**tool_call["args"])
                                         case "edit_file":
-                                            summary = display_edit_file(**tool_call["args"])
+                                            summary: str = display_edit_file(**tool_call["args"])
                                         case 'glob':
-                                            summary = display_glob(**tool_call["args"])
+                                            summary: str = display_glob(**tool_call["args"])
                                         case 'grep':
-                                            summary = display_grep(**tool_call["args"])   
+                                            summary: str = display_grep(**tool_call["args"])   
                                         case 'bash':
-                                            summary = display_bash(**tool_call["args"])
+                                            summary: str = display_bash(**tool_call["args"])
                                         case 'create_todo': 
-                                            summary = display_create_todo(**tool_call["args"])
+                                            summary: str = display_create_todo(**tool_call["args"])
                                         case 'update_todo':
-                                            summary = display_update_todo(**tool_call["args"])
+                                            summary: str = display_update_todo(**tool_call["args"])
                                         case 'list_todos':
                                             summary: str = display_list_todos(**tool_call["args"])
                                         case _:
@@ -179,7 +179,7 @@ async def main():
                                         live.update(Markdown(f"**AI:** {accumulated_content}"))
                                         accumulated_content = None
                     
-                    printed_count = len(all_messages)
+                    printed_count: int = len(all_messages)
             
             console.print()  # Newline after streaming
             messages = chunk["messages"]
