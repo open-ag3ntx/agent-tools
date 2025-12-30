@@ -110,16 +110,13 @@ async def main():
             # Track the final state to update messages at the end
             final_messages = None
             
-            with Live(console=console, refresh_per_second=12, auto_refresh=True) as live:
+            # transients=True is crucial to prevent "ghosting" of the live display when input starts
+            with Live(console=console, refresh_per_second=1, auto_refresh=True, transient=True) as live:
                 async for event in agent.astream_events({
                     "messages": messages
                 }, version="v2"):
                     kind = event["event"]
-                    data: EventData | None = event["data"]
-                    # if kind not in ["on_chat_model_stream", "on_chain_end", "on_chat_model_end", "on_chain_stream", "on_chat_model_start"]:
-                    #     print('======================================DEBUG EVENT======================================')
-                    #     print(dumps(event, pretty=True))
-                    #     print('=======================================================================================')
+                    data = event["data"]
                     
                     if kind == "on_chat_model_stream":
                         chunk = data.get("chunk")
@@ -131,57 +128,79 @@ async def main():
                                 
                     elif kind == "on_tool_start":
                         name = event["name"]
+                        summary = f"Running tool: {name}"
                         match name:
                             case "read_file":
-                                summary: str = display_read_file(**data.get('input', {}))
+                                input_data = data.get('input', {})
+                                summary = display_read_file(**input_data)
                             case "write_file":
-                                summary: str = display_write_file(**data.get('input', {}))
+                                summary = display_write_file(**data.get('input', {}))
                             case "edit_file":
-                                summary: str = display_edit_file(**data.get('input', {}))
+                                summary = display_edit_file(**data.get('input', {}))
                             case 'glob':
-                                summary: str = display_glob(**data.get('input', {}))
+                                summary = display_glob(**data.get('input', {}))
                             case 'grep':
-                                summary: str = display_grep(**data.get('input', {}))   
+                                summary = display_grep(**data.get('input', {}))   
                             case 'bash':
-                                summary: str = display_bash(**data.get('input', {}))
+                                summary = display_bash(**data.get('input', {}))
                             case 'create_todo': 
-                                summary: str = display_create_todo(**data.get('input', {}))
+                                summary = display_create_todo(**data.get('input', {}))
                             case 'update_todo':
-                                summary: str = display_update_todo(**data.get('input', {}))
+                                summary = display_update_todo(**data.get('input', {}))
                             case 'list_todos':
-                                summary: str = display_list_todos(**data.get('input', {}))
-                        live.update(Markdown(f"**AI:** {summary}"))
+                                summary = display_list_todos(**data.get('input', {}))
+                        
+                        # Show the tool summary temporarily
+                        live.stop()
+                        if isinstance(summary, str):
+                            console.print(Markdown(f"**AI:** {summary}"))
+                        else:
+                            console.print(summary)
+                        live.start()
                         
                     elif kind == "on_tool_end":
                         name = event["name"]
                         tool_output = data.get("output")
                         if tool_output:
+                            summary = f"[bold orange]**Tool ({name}):**[/]"
                             match name:
                                 case "read_file":
                                     summary = get_read_file_tool_output(data)
                                 case _:
-                                    summary = f"[bold orange]**Tool ({event['name']}):**[/]"
+                                    pass
                              
+                            # Print tool output permanently
                             live.stop()
                             console.print(summary)
                             live.start()
-                            # # Restore AI message
-                            # live.update(Markdown(f"**AI:** {accumulated_content}"))
+                            
+                            # Restore AI message to the live display
+                            live.update(Markdown(f"**AI:** {accumulated_content}"))
                     
                     elif kind == "on_chain_end":
-                        # Attempt to capture the final state if this is the root chain ending
-                        output = data.get("output")
-                        if isinstance(output, dict) and "messages" in output:
-                            final_messages = output["messages"]
+                        # Only capture the final state from the ROOT chain (no parent_ids)
+                        # This ensures we get the full state of the graph, not just a sub-chain result
+                        if not data.get("parent_ids"):
+                            output = data.get("output")
+                            # Sanity check: ensure output has messages and it's a list
+                            if isinstance(output, dict) and "messages" in output:
+                                cand_messages = output["messages"]
+                                if isinstance(cand_messages, list) and len(cand_messages) > len(messages):
+                                    final_messages = cand_messages
 
+            # Print the final accumulated AI content permanently
+            if accumulated_content:
+                console.print(Markdown(f"**AI:** {accumulated_content}"))
             console.print()  # Newline
             
-            # Update history
+            # Update history safely
             if final_messages:
                 messages = final_messages
             else:
-                # Fallback if we couldn't capture state (shouldn't happen with correct LangGraph setup)
-                # We manually append at least the AI response
+                # If we failed to capture the full state, we rely on manual append.
+                # WARNING: This is lossy if tool calls happened, as we validly need the ToolMessages 
+                # and the AIMessage with tool_calls set.
+                # But it's better than crashing or losing the text response.
                 if accumulated_content:
                     messages.append(AIMessage(content=accumulated_content))
             

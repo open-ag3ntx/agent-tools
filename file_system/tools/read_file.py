@@ -103,10 +103,6 @@ def display_read_file(file_path: str, limit: Optional[int] = None, offset: Optio
         return f'Reading File {file_path}'
 
 def get_read_file_tool_output(data: EventData) -> Syntax:
-    print('=================DEBUG READ FILE TOOL OUTPUT DATA=================')
-    print(dumps(data, pretty=True))
-    print('===================================================================')
-    
     output = data['output']
     if isinstance(output, ToolMessage):
         content = output.content
@@ -125,7 +121,8 @@ def get_read_file_tool_output(data: EventData) -> Syntax:
         return syntax
     result: ReadFileResult = ReadFileResult.model_validate_json(content)
     if result.success and result.content:
-        file_type = get_file_extension(data.get('input', {}).get('path', 'python'))
+        file_path = data.get('input', {}).get('file_path') or data.get('input', {}).get('path', 'python')
+        file_type = get_file_extension(file_path)
         syntax = Syntax(
             result.content,
             file_type,

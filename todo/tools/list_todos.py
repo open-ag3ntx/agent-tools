@@ -1,3 +1,4 @@
+from anyio import Path
 from base.models import TodoItem
 from typing import Annotated
 from langchain_core.tools import tool
@@ -47,7 +48,36 @@ def display_list_todos(
     todos = todo_store.get(task_group, {})
     if not todos:
         return f'No todos found for task group: {task_group}'
+    todo_items = []
     for todo in todos.values():
-        status_icon = '- [x]' if todo.status == 'completed' else '- [ ]' if todo.status == 'cancelled' else '- [ ]'
-        todo_str += f'- {status_icon} [{todo.id}] {todo.title} ({todo.status})\n'
-    return f'Todo Items for Task Group: {task_group}\n{todo_str}'
+        # Markdown task list requires: - [ ] or - [x]
+        if todo.status == 'completed':
+            status_icon = '-[x]'
+        else:
+            status_icon = '-[ ]'
+        
+        todo_items.append(f'{status_icon} {todo.title}')
+    todo_str = "\n".join(todo_items)
+    result = f'Todo Items for Task Group: {task_group}\n{todo_str}'
+    print('=================DEBUG LIST TODOS SUMMARY=================')
+    print(result)
+    print('==========================================================')
+    return result
+
+def test_display_list_todos():
+    # Setup test data
+    task_group = "test_group"
+    todo_store[task_group] = {
+        1: TodoItem(id=1, task_group=task_group, title="First Task", status="pending"),
+        2: TodoItem(id=2, task_group=task_group, title="Second Task", status="completed"),
+        3: TodoItem(id=3, task_group=task_group, title="Third Task", status="cancelled"),
+    }
+    
+    # Call the display function
+    summary = display_list_todos(task_group)
+    
+    # Print the summary for visual inspection
+    print(summary)
+
+if __name__ == "__main__":
+    test_display_list_todos()

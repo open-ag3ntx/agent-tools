@@ -54,12 +54,30 @@ def create_todo(
     return f'Todos created successfully with IDs {todo_ids}'
 
 
+from rich.console import Console
+from rich.table import Table
+
 def display_create_todo(
     titles: list[str],
     task_group: str,
-    ) -> str:
-    """Generates a human-readable summary of the create_todo action."""
-    todos_str = '- [ ] '
-    for title in titles:
-        todos_str += f'- [ ] {title}\n'
-    return f'Creating Todo Items in Task Group: {task_group}\n{todos_str}'
+) -> str:
+    """Displays todos in a table format with checkboxes."""
+    
+    console = Console()
+    
+    table = Table(title=f"Todo Items for Task Group: {task_group}", 
+                  show_header=True, 
+                  header_style="bold cyan")
+    
+    table.add_column("Status", style="dim", width=8)
+    table.add_column("Task", style="white")
+    
+    for todo in titles:
+        table.add_row("☐", todo)  # Use unicode checkbox
+    
+    # Return as string for markdown rendering
+    result = f'**Todo Items for Task Group: {task_group}**\n\n'
+    for todo in titles:
+        result += f'☐ {todo}\n'
+    
+    return result
