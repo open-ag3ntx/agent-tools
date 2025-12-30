@@ -89,7 +89,7 @@ async def main():
     
     while True:
         try:
-            user_input = get_multiline_input("\nYou: ")
+            user_input = get_multiline_input("You: ")
             if user_input.lower() == "exit":
                 console.print("Goodbye!")
                 break
