@@ -122,3 +122,10 @@ async def write_file_content(file_path: str, file_content: str) -> None:
 
     with open(file_path, "w") as file:
         file.write(file_content)
+
+
+def get_file_extension(file_name: str) -> str:
+    """
+    Get the extension of a file.
+    """
+    return os.path.splitext(file_name)[1].lower()

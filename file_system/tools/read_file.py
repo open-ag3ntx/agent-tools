@@ -1,11 +1,15 @@
+from langchain.messages import ToolMessage
+from langchain_core.load import dumps
+from langchain_core.runnables.schema import EventData
+from rich.syntax import Syntax
 from os import stat_result
 from numbers import Number
 from typing import Annotated, Optional, Literal
 import os
 
 from base.settings import settings
-from base.file_utils import get_file_type, read_file_content
-from base.models import BaseToolResult
+from base.file_utils import get_file_type, read_file_content, get_file_extension
+from base.models import BaseToolResult, GlobToolResult
 
 class ReadFileResult(BaseToolResult):
     content: Optional[str] = None
@@ -19,7 +23,7 @@ async def read_file(
     file_path: Annotated[str, "The absolute path to the file to read"],
     limit: Annotated[Optional[int], "The maximum number of lines to read"] = 2000,
     offset: Annotated[Optional[int], "The number of lines to skip"] = 0
-) -> BaseToolResult:
+) -> str:
     """
     Reads a file from the local filesystem. You can access any file directly by using this tool.Assume this tool is able to read all files on the machine. 
     If the User provides a path to a file assume that path is valid. It is okay to read a file that does not exist; an error will be returned.
@@ -38,37 +42,37 @@ async def read_file(
             return ReadFileResult(
                 success=False,
                 error="Could not read content of the file because it does not exist at the given path"
-            )
+            ).model_dump_json()
         if not os.path.isfile(file_path):
             return ReadFileResult(
                 success=False,
                 error="Could not read content of the file because it is a directory, not a file"
-            )
+            ).model_dump_json()
         if not file_path.startswith(settings.present_working_directory) and not file_path.startswith("/tmp/"):
             return ReadFileResult(
                 success=False,
                 error="Could not read content of the file because it is not allowed to read files outside the present working directory"
-            )
+            ).model_dump_json()
         file_metadata: stat_result = os.stat(file_path)
         if file_metadata.st_size > FILE_SIZE_LIMIT:
             return ReadFileResult(
                 success=False,
                 error="Could not read content of the file because it is too large, the maximum size is 10MB"
-            )
+            ).model_dump_json()
         
         file_type: str = await get_file_type(file_path)
         if file_type != "text":
             return ReadFileResult(
                 success=False,
                 error="This file doesnt seem to be having text content, only files having text content can be read"
-            )
+            ).model_dump_json()
         
         file_content: str = await read_file_content(file_path)
         if len(file_content) == 0:
             return ReadFileResult(
                 success=True,
                 content="This file is empty"
-            )
+            ).model_dump_json()
         lines: list[str] = file_content.split("\n")
         start_line = max(0, min(offset, len(lines) - 1))
         end_line: int = min(start_line + limit, len(lines))
@@ -83,13 +87,13 @@ async def read_file(
 
         return ReadFileResult(
             success=True, content="\n".join(selected_lines)
-        )
+        ).model_dump_json()
 
     except Exception as e:
         return ReadFileResult(
             success=False,
             error=f"Error reading file: {e}"
-        )
+        ).model_dump_json()
     
 def display_read_file(file_path: str, limit: Optional[int] = None, offset: Optional[int] = None) -> str:
     """Generates a human-readable summary of the read_file action."""
@@ -97,3 +101,41 @@ def display_read_file(file_path: str, limit: Optional[int] = None, offset: Optio
         return f'Reading File {file_path}:{offset + 1}:{offset + limit}'
     else:
         return f'Reading File {file_path}'
+
+def get_read_file_tool_output(data: EventData) -> Syntax:
+    print('=================DEBUG READ FILE TOOL OUTPUT DATA=================')
+    print(dumps(data, pretty=True))
+    print('===================================================================')
+    
+    output = data['output']
+    if isinstance(output, ToolMessage):
+        content = output.content
+    elif isinstance(output, dict):
+        content = output.get('content')
+    else:
+        content = None
+
+    if content is None:
+        syntax = Syntax(
+            "Error: No content returned from read_file tool.",
+            "text",
+            theme="ansi_dark",
+            line_numbers=False
+        )
+        return syntax
+    result: ReadFileResult = ReadFileResult.model_validate_json(content)
+    if result.success and result.content:
+        file_type = get_file_extension(data.get('input', {}).get('path', 'python'))
+        syntax = Syntax(
+            result.content,
+            file_type,
+            theme="ansi_dark",
+            line_numbers=False
+        )
+        return syntax
+    return Syntax(
+        f"Error reading file: {result.error}",
+        "text",
+        theme="ansi_dark",
+        line_numbers=False
+    )

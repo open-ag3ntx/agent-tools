@@ -1,3 +1,5 @@
+from packaging.utils import _
+from langchain_core.runnables.schema import EventData
 from msgpack import dump
 import json
 from todo.tools.list_todos import display_list_todos
@@ -17,7 +19,7 @@ from rich.markdown import Markdown
 from rich.console import Console
 from base.settings import settings as file_system_settings
 from llm_client.client import client as llm_client
-from file_system.tools.read_file import display_read_file
+from file_system.tools.read_file import display_read_file, get_read_file_tool_output
 from file_system.tools.write_file import display_write_file
 from file_system.tools.edit_file import display_edit_file
 from langchain_core.load import loads, dumps
@@ -111,13 +113,13 @@ async def main():
             with Live(console=console, refresh_per_second=12, auto_refresh=True) as live:
                 async for event in agent.astream_events({
                     "messages": messages
-                }, version="v1"):
+                }, version="v2"):
                     kind = event["event"]
-                    data = event["data"]
-                    if kind not in ["on_chat_model_stream", "on_chain_end", "on_chat_model_end", "on_chain_stream"]:
-                        print('======================================DEBUG EVENT======================================')
-                        print(dumps(event, pretty=True))
-                        print('=======================================================================================')
+                    data: EventData | None = event["data"]
+                    # if kind not in ["on_chat_model_stream", "on_chain_end", "on_chat_model_end", "on_chain_stream", "on_chat_model_start"]:
+                    #     print('======================================DEBUG EVENT======================================')
+                    #     print(dumps(event, pretty=True))
+                    #     print('=======================================================================================')
                     
                     if kind == "on_chat_model_stream":
                         chunk = data.get("chunk")
@@ -128,21 +130,43 @@ async def main():
                                 live.update(Markdown(f"**AI:** {accumulated_content}"))
                                 
                     elif kind == "on_tool_start":
-                        live.update(Markdown(f"**AI:** {accumulated_content}[dim]Running tool: {event['name']}...[/]"))
+                        name = event["name"]
+                        match name:
+                            case "read_file":
+                                summary: str = display_read_file(**data.get('input', {}))
+                            case "write_file":
+                                summary: str = display_write_file(**data.get('input', {}))
+                            case "edit_file":
+                                summary: str = display_edit_file(**data.get('input', {}))
+                            case 'glob':
+                                summary: str = display_glob(**data.get('input', {}))
+                            case 'grep':
+                                summary: str = display_grep(**data.get('input', {}))   
+                            case 'bash':
+                                summary: str = display_bash(**data.get('input', {}))
+                            case 'create_todo': 
+                                summary: str = display_create_todo(**data.get('input', {}))
+                            case 'update_todo':
+                                summary: str = display_update_todo(**data.get('input', {}))
+                            case 'list_todos':
+                                summary: str = display_list_todos(**data.get('input', {}))
+                        live.update(Markdown(f"**AI:** {summary}"))
                         
                     elif kind == "on_tool_end":
+                        name = event["name"]
                         tool_output = data.get("output")
                         if tool_output:
-                            if hasattr(tool_output, "content"):
-                                output_str = tool_output.content
-                            else:
-                                output_str = str(tool_output)
-                                
+                            match name:
+                                case "read_file":
+                                    summary = get_read_file_tool_output(data)
+                                case _:
+                                    summary = f"[bold orange]**Tool ({event['name']}):**[/]"
+                             
                             live.stop()
-                            console.print(f"[bold orange]**Tool ({event['name']}):**[/] {output_str}")
+                            console.print(summary)
                             live.start()
-                            # Restore AI message
-                            live.update(Markdown(f"**AI:** {accumulated_content}"))
+                            # # Restore AI message
+                            # live.update(Markdown(f"**AI:** {accumulated_content}"))
                     
                     elif kind == "on_chain_end":
                         # Attempt to capture the final state if this is the root chain ending
