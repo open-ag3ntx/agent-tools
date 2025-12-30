@@ -100,89 +100,59 @@ async def main():
             
             printed_count = 0
             accumulated_content = ""
-            ai_started = False
-            last_ai_message_index = -1  # Track which AI message we're currently streaming
+            current_tool_input = ""
             
-            with Live(console=console, refresh_per_second=10, auto_refresh=True) as live:
-                async for chunk in agent.astream({
+            # Track the final state to update messages at the end
+            final_messages = None
+            
+            with Live(console=console, refresh_per_second=12, auto_refresh=True) as live:
+                async for event in agent.astream_events({
                     "messages": messages
-                }, stream_mode="values"):
-                    all_messages = chunk["messages"]
-
-                    for idx, msg in enumerate(all_messages[printed_count:], start=printed_count):
-                        if isinstance(msg, HumanMessage):
-                            # User messages already displayed
-                            pass
-                        
-                        elif isinstance(msg, ToolMessage):
-                            # Tool results handled elsewhere
-                            pass
-                        
-                        elif isinstance(msg, AIMessage):
-                            # Check if this is a new AI message (reset accumulated content)
-                            if idx != last_ai_message_index:
-                                accumulated_content = ""
-                                ai_started = False
-                                last_ai_message_index = idx
-                            
-                            # Handle tool calls
-                            if msg.tool_calls:
-                                # print(msg.tool_calls)
-                                for tool_call in msg.tool_calls:
-                                    match tool_call["name"]:
-                                        case "read_file":
-                                            summary: str = display_read_file(**tool_call["args"])
-                                        case "write_file":
-                                            summary: str = display_write_file(**tool_call["args"])
-                                        case "edit_file":
-                                            summary: str = display_edit_file(**tool_call["args"])
-                                        case 'glob':
-                                            summary: str = display_glob(**tool_call["args"])
-                                        case 'grep':
-                                            summary: str = display_grep(**tool_call["args"])   
-                                        case 'bash':
-                                            summary: str = display_bash(**tool_call["args"])
-                                        case 'create_todo': 
-                                            summary: str = display_create_todo(**tool_call["args"])
-                                        case 'update_todo':
-                                            summary: str = display_update_todo(**tool_call["args"])
-                                        case 'list_todos':
-                                            summary: str = display_list_todos(**tool_call["args"])
-                                        case _:
-                                            summary = f'[Tool: {tool_call["name"]}]'
-                                    live.stop()
-                                    console.print(f"[bold orange]**AI:**[/] {summary}")
-                                    live.start()
-                            
-                            content = msg.content
-                            if content:
-                                if not ai_started:
-                                    ai_started = True
-                                
-                                new_content = ""
-                                if isinstance(content, list):
-                                    for block in content:
-                                        if isinstance(block, dict) and block.get('type') == 'text':
-                                            text = block.get('text', '')
-                                            if text:
-                                                new_content += text
-                                        elif isinstance(block, str) and block:
-                                            new_content += block
-                                elif isinstance(content, str):
-                                    new_content = content
-                                
-                                # Only update if content changed
-                                if new_content != accumulated_content:
-                                    accumulated_content = new_content
-                                    # Update live display with markdown
-                                    if accumulated_content:
-                                        live.update(Markdown(f"**AI:** {accumulated_content}"))
-                                        accumulated_content = None
+                }, version="v1"):
+                    kind = event["event"]
+                    data = event["data"]
                     
-                    printed_count: int = len(all_messages)
+                    if kind == "on_chat_model_stream":
+                        chunk = data.get("chunk")
+                        if chunk:
+                            content = chunk.content
+                            if content:
+                                accumulated_content += content
+                                live.update(Markdown(f"**AI:** {accumulated_content}"))
+                                
+                    elif kind == "on_tool_start":
+                        live.update(Markdown(f"**AI:** {accumulated_content}\n\n[dim]Running tool: {event['name']}...[/]"))
+                        
+                    elif kind == "on_tool_end":
+                        tool_output = data.get("output")
+                        if tool_output:
+                            if hasattr(tool_output, "content"):
+                                output_str = tool_output.content
+                            else:
+                                output_str = str(tool_output)
+                                
+                            live.stop()
+                            console.print(f"[bold orange]**Tool ({event['name']}):**[/] {output_str}")
+                            live.start()
+                            # Restore AI message
+                            live.update(Markdown(f"**AI:** {accumulated_content}"))
+                    
+                    elif kind == "on_chain_end":
+                        # Attempt to capture the final state if this is the root chain ending
+                        output = data.get("output")
+                        if isinstance(output, dict) and "messages" in output:
+                            final_messages = output["messages"]
+
+            console.print()  # Newline
             
-            console.print()  # Newline after streaming
-            messages = chunk["messages"]
+            # Update history
+            if final_messages:
+                messages = final_messages
+            else:
+                # Fallback if we couldn't capture state (shouldn't happen with correct LangGraph setup)
+                # We manually append at least the AI response
+                if accumulated_content:
+                    messages.append(AIMessage(content=accumulated_content))
             
         except KeyboardInterrupt:
             console.print("\nGoodbye!")
