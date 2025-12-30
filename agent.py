@@ -1,3 +1,5 @@
+from msgpack import dump
+import json
 from todo.tools.list_todos import display_list_todos
 import dis
 from todo.tools.update_todo import display_update_todo
@@ -18,6 +20,7 @@ from llm_client.client import client as llm_client
 from file_system.tools.read_file import display_read_file
 from file_system.tools.write_file import display_write_file
 from file_system.tools.edit_file import display_edit_file
+from langchain_core.load import loads, dumps
 
 load_dotenv()
 
@@ -111,6 +114,10 @@ async def main():
                 }, version="v1"):
                     kind = event["event"]
                     data = event["data"]
+                    if kind not in ["on_chat_model_stream", "on_chain_end", "on_chat_model_end", "on_chain_stream"]:
+                        print('======================================DEBUG EVENT======================================')
+                        print(dumps(event, pretty=True))
+                        print('=======================================================================================')
                     
                     if kind == "on_chat_model_stream":
                         chunk = data.get("chunk")
@@ -121,7 +128,7 @@ async def main():
                                 live.update(Markdown(f"**AI:** {accumulated_content}"))
                                 
                     elif kind == "on_tool_start":
-                        live.update(Markdown(f"**AI:** {accumulated_content}\n\n[dim]Running tool: {event['name']}...[/]"))
+                        live.update(Markdown(f"**AI:** {accumulated_content}[dim]Running tool: {event['name']}...[/]"))
                         
                     elif kind == "on_tool_end":
                         tool_output = data.get("output")
