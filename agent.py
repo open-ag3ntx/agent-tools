@@ -1,3 +1,4 @@
+from asyncio.exceptions import CancelledError
 from packaging.utils import _
 from langchain_core.runnables.schema import EventData
 from msgpack import dump
@@ -23,6 +24,8 @@ from file_system.tools.read_file import display_read_file, get_read_file_tool_ou
 from file_system.tools.write_file import display_write_file
 from file_system.tools.edit_file import display_edit_file
 from langchain_core.load import loads, dumps
+import asyncio
+
 
 load_dotenv()
 
@@ -210,5 +213,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, CancelledError):
+        pass
