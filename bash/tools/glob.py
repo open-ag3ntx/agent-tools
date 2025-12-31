@@ -63,11 +63,12 @@ async def glob(
             success=False,
             error=f"Error searching for files: {str(e)}"
         )
-
+ 
 def display_glob(
     pattern: str,
-    path: str,
+    path: str | None = None,
     exclude_dirs: Optional[list[str]] = None,
 ) -> str:
     """Generates a human-readable summary of the glob action."""
-    return f'Globbing {pattern} in directory: {path}'
+    cwd = path or settings.present_test_directory
+    return f'Globbing {pattern} in directory: {cwd} excluding directories: {exclude_dirs or []}s'

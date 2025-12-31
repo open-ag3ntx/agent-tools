@@ -122,7 +122,7 @@ def get_read_file_tool_output(data: EventData) -> Syntax:
     result: ReadFileResult = ReadFileResult.model_validate_json(content)
     if result.success and result.content:
         file_path = data.get('input', {}).get('file_path') or data.get('input', {}).get('path', 'python')
-        file_type = get_file_extension(file_path)
+        file_type = get_file_extension(file_path).lstrip('.') or 'text'
         syntax = Syntax(
             result.content,
             file_type,
