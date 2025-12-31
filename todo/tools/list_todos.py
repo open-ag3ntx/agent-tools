@@ -59,9 +59,6 @@ def display_list_todos(
         todo_items.append(f'{status_icon} {todo.title}')
     todo_str = "\n".join(todo_items)
     result = f'Todo Items for Task Group: {task_group}\n{todo_str}'
-    print('=================DEBUG LIST TODOS SUMMARY=================')
-    print(result)
-    print('==========================================================')
     return result
 
 def test_display_list_todos():
