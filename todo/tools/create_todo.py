@@ -55,29 +55,30 @@ def create_todo(
 
 
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 def display_create_todo(
     titles: list[str],
     task_group: str,
-) -> str:
-    """Displays todos in a table format with checkboxes."""
+) -> Panel:
+    """Best UX: Clean table in a panel with summary."""
     
     console = Console()
     
-    table = Table(title=f"Todo Items for Task Group: {task_group}", 
-                  show_header=True, 
-                  header_style="bold cyan")
+    # Create table
+    table = Table(show_header=False, box=None, padding=(0, 1))
+    table.add_column("Status", justify="center", width=6)
+    table.add_column("ID", style="dim", width=4)
+    table.add_column("Task")
     
-    table.add_column("Status", style="dim", width=8)
-    table.add_column("Task", style="white")
+    for i, todo in enumerate(titles, 1):
+        table.add_row("☐", f"{i}.", todo)
     
-    for todo in titles:
-        table.add_row("☐", todo)  # Use unicode checkbox
-    
-    # Return as string for markdown rendering
-    result = f'**Todo Items for Task Group: {task_group}**\n\n'
-    for todo in titles:
-        result += f'☐ {todo}\n'
-    
-    return result
+    # Wrap in panel
+    return Panel(
+        table,
+        title=f"[bold green]✓ Created {len(titles)} todos in '{task_group}'[/bold green]",
+        border_style="green",
+        padding=(0, 1)
+    )
