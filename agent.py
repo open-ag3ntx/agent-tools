@@ -17,7 +17,8 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from dotenv import load_dotenv
 from rich.live import Live
 from rich.markdown import Markdown
-from rich.console import Console
+from rich.console import Console, Group
+from rich.text import Text
 from base.settings import settings as file_system_settings
 from llm_client.client import client as llm_client
 from file_system.tools.read_file import display_read_file, get_read_file_tool_output
@@ -25,6 +26,15 @@ from file_system.tools.write_file import display_write_file
 from file_system.tools.edit_file import display_edit_file
 from langchain_core.load import loads, dumps
 import asyncio
+import sys
+
+# For terminal echo suppression
+try:
+    import termios
+    import tty
+    HAS_TERMIOS = True
+except ImportError:
+    HAS_TERMIOS = False
 
 
 load_dotenv()
@@ -114,82 +124,113 @@ async def main():
             final_messages = None
             
             # transients=True is crucial to prevent "ghosting" of the live display when input starts
-            with Live(console=console, refresh_per_second=1, auto_refresh=True, transient=True) as live:
-                async for event in agent.astream_events({
-                    "messages": messages
-                }, version="v2"):
-                    kind = event["event"]
-                    data = event["data"]
+            
+            # Suppress terminal echo if possible
+            fd = sys.stdin.fileno()
+            old_settings = None
+            if HAS_TERMIOS:
+                old_settings = termios.tcgetattr(fd)
+                new_settings = termios.tcgetattr(fd)
+                new_settings[3] = new_settings[3] & ~termios.ECHO
+                termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
+
+            try:
+                with Live(console=console, refresh_per_second=1, auto_refresh=True, transient=True) as live:
+                    current_status = None
                     
-                    if kind == "on_chat_model_stream":
-                        chunk = data.get("chunk")
-                        if chunk:
-                            content = chunk.content
-                            if content:
-                                accumulated_content += content
-                                live.update(Markdown(f"**AI:** {accumulated_content}"))
-                                
-                    elif kind == "on_tool_start":
-                        name = event["name"]
-                        summary = f"Running tool: {name}"
-                        match name:
-                            case "read_file":
-                                input_data = data.get('input', {})
-                                summary = display_read_file(**input_data)
-                            case "write_file":
-                                summary = display_write_file(**data.get('input', {}))
-                            case "edit_file":
-                                summary = display_edit_file(**data.get('input', {}))
-                            case 'glob':
-                                summary = display_glob(**data.get('input', {}))
-                            case 'grep':
-                                summary = display_grep(**data.get('input', {}))   
-                            case 'bash':
-                                summary = display_bash(**data.get('input', {}))
-                            case 'create_todo': 
-                                summary = display_create_todo(**data.get('input', {}))
-                            case 'update_todo':
-                                summary = display_update_todo(**data.get('input', {}))
-                            case 'list_todos':
-                                summary = display_list_todos(**data.get('input', {}))
+                    async for event in agent.astream_events({
+                        "messages": messages
+                    }, version="v2"):
+                        kind = event["event"]
+                        data = event["data"]
                         
-                        # Show the tool summary temporarily
-                        live.stop()
-                        if isinstance(summary, str):
-                            console.print(Markdown(f"**AI:** {summary}"))
-                        else:
-                            console.print(summary)
-                        live.start()
-                        
-                    elif kind == "on_tool_end":
-                        name = event["name"]
-                        tool_output = data.get("output")
-                        if tool_output:
-                            summary = f"[bold orange]**Tool ({name}):**[/]"
-                            match name:
-                                case "read_file":
-                                    summary = get_read_file_tool_output(data)
-                                case _:
-                                    pass
-                             
-                            # Print tool output permanently
-                            live.stop()
-                            console.print(summary)
-                            live.start()
+                        def update_display():
+                            renderables = []
+                            if accumulated_content:
+                                renderables.append(Markdown(f"**AI:** {accumulated_content}"))
+                            if current_status:
+                                if isinstance(current_status, str):
+                                    # Use Text.assemble to safely include summaries that might have [ or ]
+                                    status_text = Text.assemble(
+                                        ("[bold blue]Running:[/] ", "bold blue"),
+                                        (current_status, "")
+                                    )
+                                    renderables.append(status_text)
+                                else:
+                                    renderables.append(current_status)
+                            live.update(Group(*renderables))
+
+                        if kind == "on_chat_model_stream":
+                            chunk = data.get("chunk")
+                            if chunk:
+                                content = chunk.content
+                                if content:
+                                    if isinstance(content, list):
+                                        content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
+                                    accumulated_content += content
+                                    update_display()
+                                    
+                        elif kind == "on_tool_start":
+                            name = event["name"]
+                            summary = f"Running tool: {name}"
+                            try:
+                                match name:
+                                    case "read_file":
+                                        input_data = data.get('input', {})
+                                        # Handle 'path' alias for 'file_path'
+                                        if 'path' in input_data and 'file_path' not in input_data:
+                                            input_data['file_path'] = input_data.pop('path')
+                                        summary = display_read_file(**input_data)
+                                    case "write_file":
+                                        summary = display_write_file(**data.get('input', {}))
+                                    case "edit_file":
+                                        summary = display_edit_file(**data.get('input', {}))
+                                    case 'glob':
+                                        summary = display_glob(**data.get('input', {}))
+                                    case 'grep':
+                                        summary = display_grep(**data.get('input', {}))   
+                                    case 'bash':
+                                        summary = display_bash(**data.get('input', {}))
+                                    case 'create_todo': 
+                                        summary = display_create_todo(**data.get('input', {}))
+                                    case 'update_todo':
+                                        summary = display_update_todo(**data.get('input', {}))
+                                    case 'list_todos':
+                                        summary = display_list_todos(**data.get('input', {}))
+                            except Exception as e:
+                                summary = f"Running tool: {name} (formatting error: {e})"
                             
-                            # Restore AI message to the live display
-                            live.update(Markdown(f"**AI:** {accumulated_content}"))
-                    
-                    elif kind == "on_chain_end":
-                        # Only capture the final state from the ROOT chain (no parent_ids)
-                        # This ensures we get the full state of the graph, not just a sub-chain result
-                        if not data.get("parent_ids"):
-                            output = data.get("output")
-                            # Sanity check: ensure output has messages and it's a list
-                            if isinstance(output, dict) and "messages" in output:
-                                cand_messages = output["messages"]
-                                if isinstance(cand_messages, list) and len(cand_messages) > len(messages):
-                                    final_messages = cand_messages
+                            current_status = summary
+                            update_display()
+                            
+                        elif kind == "on_tool_end":
+                            name = event["name"]
+                            tool_output = data.get("output")
+                            current_status = None # Clear status when tool ends
+                            
+                            if tool_output:
+                                summary = f"[bold orange]**Tool ({name}):**[/]"
+                                match name:
+                                    case "read_file":
+                                        summary = get_read_file_tool_output(data)
+                                    case _:
+                                        pass
+                                 
+                                # Print tool output permanently inside the Live context safely
+                                live.console.print(summary)
+                                update_display()
+                        
+                        elif kind == "on_chain_end":
+                            if not data.get("parent_ids"):
+                                output = data.get("output")
+                                if isinstance(output, dict) and "messages" in output:
+                                    cand_messages = output["messages"]
+                                    if isinstance(cand_messages, list) and len(cand_messages) > len(messages):
+                                        final_messages = cand_messages
+            finally:
+                # Restore terminal settings
+                if HAS_TERMIOS and old_settings:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
             # Print the final accumulated AI content permanently
             if accumulated_content:
