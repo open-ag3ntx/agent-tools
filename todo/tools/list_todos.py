@@ -1,3 +1,5 @@
+from rich.table import Table
+from rich.panel import Panel
 from anyio import Path
 from base.models import TodoItem
 from typing import Annotated
@@ -42,39 +44,17 @@ def list_todos(task_group: Annotated[str, "The task_group of the todo item"]) ->
 
 def display_list_todos(
     task_group: str,
-    ) -> str:
+    ) -> Panel:
     """Generates a human-readable summary of the list_todos action."""
-    todo_str = ''
     todos = todo_store.get(task_group, {})
-    if not todos:
-        return f'No todos found for task group: {task_group}'
-    todo_items = []
-    for todo in todos.values():
-        # Markdown task list requires: - [ ] or - [x]
-        if todo.status == 'completed':
-            status_icon = '-[x]'
-        else:
-            status_icon = '-[ ]'
-        
-        todo_items.append(f'{status_icon} {todo.title}')
-    todo_str = "\n".join(todo_items)
-    result = f'Todo Items for Task Group: {task_group}\n{todo_str}'
-    return result
-
-def test_display_list_todos():
-    # Setup test data
-    task_group = "test_group"
-    todo_store[task_group] = {
-        1: TodoItem(id=1, task_group=task_group, title="First Task", status="pending"),
-        2: TodoItem(id=2, task_group=task_group, title="Second Task", status="completed"),
-        3: TodoItem(id=3, task_group=task_group, title="Third Task", status="cancelled"),
-    }
-    
-    # Call the display function
-    summary = display_list_todos(task_group)
-    
-    # Print the summary for visual inspection
-    print(summary)
-
-if __name__ == "__main__":
-    test_display_list_todos()
+    table = Table(show_header=False, box=None, padding=(1, 1, 1, 1), show_edge=True)
+    table.add_column("Status", justify="left", width=1)
+    table.add_column("Task")
+    for i, todo in enumerate(todos.values(), 1):
+        table.add_row("☐", todo.title) if todo.status == "pending" else table.add_row("✔", todo.title) if todo.status == "completed" else table.add_row("✗", todo.title)
+    return Panel(
+        table,
+        title=f"[bold orange]✓ List todos in '{task_group}'[/bold orange]",
+        border_style="orange",
+        padding=(0, 1)
+    )

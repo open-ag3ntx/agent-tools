@@ -1,3 +1,6 @@
+from rich.text import Text
+from rich.table import Table
+from rich.panel import Panel
 from typing import Annotated, Literal
 from langchain_core.tools import tool
 from base.store import todo_store
@@ -51,6 +54,13 @@ def display_update_todo(
     task_group: str,
     todo_id: int,
     status: Literal["pending", "completed", "cancelled"],
-    ) -> str:
+    ) -> Text:
     """Generates a human-readable summary of the update_todo action."""
-    return f'Updating Todo Item ID: {todo_id} in Task Group: {task_group} to Status: {status}'
+    todos = todo_store.get(task_group, {})
+    todo = todos.get(todo_id)
+    if not todo:
+        return Text.from_markup(f"[bold red]✗ Todo with ID {todo_id} not found in '{task_group}'[/bold red]")
+    
+    status_text = Text.from_markup("[bold orange] ")
+    status_text.append(str(f"Marking {todo.title} as {status}"))
+    return status_text

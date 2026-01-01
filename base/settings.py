@@ -62,6 +62,9 @@ class Settings(BaseSettings):
 
     default_skills_directory: str = f"{present_working_directory}/skills"
 
+    # Theme Configuration
+    theme_color: str = "light_coral" # Dim Purple
+    ai_color: str = "bright_white"
 
 settings = Settings()
 

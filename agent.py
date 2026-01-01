@@ -19,7 +19,8 @@ from rich.live import Live
 from rich.markdown import Markdown
 from rich.console import Console, Group
 from rich.text import Text
-from base.settings import settings as file_system_settings
+from rich.spinner import Spinner
+from base.settings import settings
 from llm_client.client import client as llm_client
 from file_system.tools.read_file import display_read_file, get_read_file_tool_output
 from file_system.tools.write_file import display_write_file
@@ -27,6 +28,7 @@ from file_system.tools.edit_file import display_edit_file
 from langchain_core.load import loads, dumps
 import asyncio
 import sys
+
 
 # For terminal echo suppression
 try:
@@ -46,10 +48,10 @@ def create_prompt():
     with open("agent-prompt.md", "r") as f:
         agent_prompt = f.read()
     agent_prompt = agent_prompt.format(
-        working_directory=file_system_settings.present_test_directory,
-        is_directory_a_git_repo=file_system_settings.is_git_repo,
-        platform=file_system_settings.platform,
-        os_version=file_system_settings.os_version,
+        working_directory=settings.present_test_directory,
+        is_directory_a_git_repo=settings.is_git_repo,
+        platform=settings.platform,
+        os_version=settings.os_version,
         todays_date=datetime.datetime.now().strftime("%Y-%m-%d"),
     )
     return agent_prompt
@@ -135,8 +137,9 @@ async def main():
                 termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
 
             try:
-                with Live(console=console, refresh_per_second=1, auto_refresh=True, transient=True) as live:
-                    current_status = None
+                with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True) as live:
+                    # Show initial thinking spinner
+                    live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Thinking...[/]"))
                     
                     async for event in agent.astream_events({
                         "messages": messages
@@ -144,22 +147,6 @@ async def main():
                         kind = event["event"]
                         data = event["data"]
                         
-                        def update_display():
-                            renderables = []
-                            if accumulated_content:
-                                renderables.append(Markdown(f"**AI:** {accumulated_content}"))
-                            if current_status:
-                                if isinstance(current_status, str):
-                                    # Use Text.assemble to safely include summaries that might have [ or ]
-                                    status_text = Text.assemble(
-                                        ("[bold blue]Running:[/] ", "bold blue"),
-                                        (current_status, "")
-                                    )
-                                    renderables.append(status_text)
-                                else:
-                                    renderables.append(current_status)
-                            live.update(Group(*renderables))
-
                         if kind == "on_chat_model_stream":
                             chunk = data.get("chunk")
                             if chunk:
@@ -168,16 +155,20 @@ async def main():
                                     if isinstance(content, list):
                                         content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
                                     accumulated_content += content
-                                    update_display()
+                                    live.update(Markdown(f"[{settings.theme_color}] {accumulated_content}[/]"))
                                     
                         elif kind == "on_tool_start":
+                            # Flush current AI content before showing tool start
+                            if accumulated_content:
+                                live.console.print(Markdown(f"[bold {settings.ai_color}]**AI:** {accumulated_content}"))
+                                accumulated_content = ""
+                            
                             name = event["name"]
                             summary = f"Running tool: {name}"
                             try:
                                 match name:
                                     case "read_file":
                                         input_data = data.get('input', {})
-                                        # Handle 'path' alias for 'file_path'
                                         if 'path' in input_data and 'file_path' not in input_data:
                                             input_data['file_path'] = input_data.pop('path')
                                         summary = display_read_file(**input_data)
@@ -200,25 +191,36 @@ async def main():
                             except Exception as e:
                                 summary = f"Running tool: {name} (formatting error: {e})"
                             
-                            current_status = summary
-                            update_display()
-                            
+                            if isinstance(summary, str):
+                                status_text = Text.from_markup(f"[bold {settings.theme_color}]{summary}:[/] ")
+                                live.console.print(status_text)
+                                # Show spinner while tool is working
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Waiting for tool...[/]"))
+                            else:
+                                live.console.print(summary) 
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Waiting for tool...[/]"))
+
                         elif kind == "on_tool_end":
+                            if accumulated_content:
+                                live.console.print(Markdown(f"**AI:** {accumulated_content}"))  # ty:ignore[unresolved-reference]
+                                accumulated_content = ""
+                                
                             name = event["name"]
                             tool_output = data.get("output")
-                            current_status = None # Clear status when tool ends
                             
                             if tool_output:
-                                summary = f"[bold orange]**Tool ({name}):**[/]"
-                                match name:
-                                    case "read_file":
-                                        summary = get_read_file_tool_output(data)
-                                    case _:
-                                        pass
-                                 
-                                # Print tool output permanently inside the Live context safely
-                                live.console.print(summary)
-                                update_display()
+                                output_summary = None
+                                    # match name:
+                                    #     case "read_file":
+                                    #         output_summary = get_read_file_tool_output(data)
+                                    #     case _:
+                                    #         pass
+                                    
+                                    # if output_summary:
+                                    #     live.console.print(output_summary)
+                                
+                                # Show spinner while model thinks about the tool output
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Thinking...[/]"))
                         
                         elif kind == "on_chain_end":
                             if not data.get("parent_ids"):

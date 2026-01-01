@@ -1,3 +1,4 @@
+from base.settings import settings
 
 from typing import Annotated
 from langchain_core.tools import tool
@@ -63,22 +64,14 @@ def display_create_todo(
     task_group: str,
 ) -> Panel:
     """Best UX: Clean table in a panel with summary."""
-    
-    console = Console()
-    
-    # Create table
-    table = Table(show_header=False, box=None, padding=(0, 1))
-    table.add_column("Status", justify="center", width=6)
-    table.add_column("ID", style="dim", width=4)
+    table = Table(show_header=False, box=None, padding=(0, 0))
+    table.add_column("Status", justify="left", width=0)
     table.add_column("Task")
-    
     for i, todo in enumerate(titles, 1):
-        table.add_row("☐", f"{i}.", todo)
-    
-    # Wrap in panel
+        table.add_row("☐", todo)
     return Panel(
         table,
-        title=f"[bold green]✓ Created {len(titles)} todos in '{task_group}'[/bold green]",
-        border_style="green",
+        title=f"[bold {settings.ai_color}]✓ Created {len(titles)} todos in '{task_group}'[/bold {settings.ai_color}]",
+        border_style=settings.theme_color,
         padding=(0, 1)
     )
