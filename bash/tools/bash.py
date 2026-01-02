@@ -3,6 +3,13 @@ import os
 import shlex
 from typing import Annotated, Optional
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.syntax import Syntax
+from rich.prompt import Confirm
+from rich.text import Text
+from typing import Optional
+
 from base import bash_utils
 from base.settings import settings
 from base.models import BashToolResult
@@ -208,12 +215,70 @@ async def bash(
             command=command,
         )
 
+
 def display_bash(
     command: str,
     description: str,
     timeout: int = settings.default_timeout,
     run_in_background: Optional[bool] = False,
     working_directory: Optional[str] = None,
-) -> str:
-    """Generates a human-readable summary of the bash action."""
-    return f'{description}: Bash {command}'
+) -> Panel:
+    """
+    Display bash command and ask for user permission before execution.
+    
+    Args:
+        command: The bash command to execute
+        description: Human-readable description of what the command does
+        timeout: Command timeout in seconds
+        run_in_background: Whether command runs in background
+        working_directory: Working directory for command execution
+    
+    Returns:
+        Plain text string for logging
+    """
+    
+    # Create syntax highlighted command
+    syntax = Syntax(
+        command,
+        "bash",
+        theme="monokai",
+        line_numbers=False,
+        word_wrap=True,
+        background_color="default"
+    )
+    
+    # Build metadata badges
+    metadata = []
+    if working_directory:
+        metadata.append(f"[dim]{working_directory}[/dim]")
+    if run_in_background:
+        metadata.append("[dim]Background[/dim]")
+    if timeout != settings.default_timeout:
+        metadata.append(f"[dim]{timeout}s[/dim]")
+    
+    # Create content with metadata if present
+    if metadata:
+        from rich.table import Table
+        content = Table.grid(padding=(0, 0))
+        content.add_row(syntax)
+        
+        meta_text = Text()
+        for i, meta in enumerate(metadata):
+            if i > 0:
+                meta_text.append(" • ", style="dim")
+            meta_text.append_text(Text.from_markup(meta))
+        content.add_row(meta_text)
+        panel_content = content
+    else:
+        panel_content = syntax
+    
+    # Display panel
+    panel = Panel(
+        panel_content,
+        title=f"[bold {settings.ai_color}] {description}[/bold {settings.ai_color}]",
+        border_style=settings.theme_color,
+        padding=(0, 1),
+        expand=False
+    )
+    
+    return panel

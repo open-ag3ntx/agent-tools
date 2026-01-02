@@ -70,7 +70,7 @@ llm = llm_client.get_new_instance()
 agent = create_agent(
     model=llm,
     tools=tools,
-    system_prompt=create_prompt()
+    system_prompt=create_prompt(),
 )
 
 
@@ -143,7 +143,7 @@ async def main():
                     
                     async for event in agent.astream_events({
                         "messages": messages
-                    }, version="v2"):
+                    }, version="v2", config={"recursion_limit": 100}):
                         kind = event["event"]
                         data = event["data"]
                         
