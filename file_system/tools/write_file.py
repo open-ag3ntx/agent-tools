@@ -70,4 +70,4 @@ def display_write_file(
     content: str,
     ) -> str:
     """Generates a human-readable summary of the write_file action."""
-    return f'Writing File {file_path}'
+    return f'Write File {file_path}'

@@ -1,3 +1,4 @@
+from base.settings import settings
 from rich.table import Table
 from rich.panel import Panel
 from anyio import Path
@@ -46,15 +47,17 @@ def display_list_todos(
     task_group: str,
     ) -> Panel:
     """Generates a human-readable summary of the list_todos action."""
-    todos = todo_store.get(task_group, {})
-    table = Table(show_header=False, box=None, padding=(1, 1, 1, 1), show_edge=True)
-    table.add_column("Status", justify="left", width=1)
+    titles = [todo.title for todo in todo_store.get(task_group, {}).values()]
+    table = Table(show_header=False, box=None, padding=(0, 1))  # Changed from (0, 0) to (0, 1)
+    table.add_column("Status", justify="left", width=2)  # Changed from width=0 to width=2
     table.add_column("Task")
-    for i, todo in enumerate(todos.values(), 1):
-        table.add_row("☐", todo.title) if todo.status == "pending" else table.add_row("✔", todo.title) if todo.status == "completed" else table.add_row("✗", todo.title)
+
+    for i, todo in enumerate(titles, 1):
+        table.add_row("☐", todo)
+
     return Panel(
         table,
-        title=f"[bold orange]✓ List todos in '{task_group}'[/bold orange]",
-        border_style="orange",
-        padding=(0, 1)
+        title=f"[bold {settings.ai_color}]✓ Created {len(titles)} todos in '{task_group}'[/bold {settings.ai_color}]",
+        border_style=settings.theme_color,
+        padding=(1, 2)  # Changed from (0, 1) to (1, 2) for better spacing
     )

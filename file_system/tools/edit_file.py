@@ -72,4 +72,4 @@ def display_edit_file(
     replace_all: bool = False,
     ) -> str:
     """Generates a human-readable summary of the edit_file action."""
-    return f'Editing File {file_path}'
+    return f'Edit File {file_path}'

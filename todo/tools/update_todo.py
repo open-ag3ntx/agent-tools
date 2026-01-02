@@ -61,6 +61,6 @@ def display_update_todo(
     if not todo:
         return Text.from_markup(f"[bold red]✗ Todo with ID {todo_id} not found in '{task_group}'[/bold red]")
     
-    status_text = Text.from_markup("[bold orange] ")
-    status_text.append(str(f"Marking {todo.title} as {status}"))
+    status_text = Text.from_markup("[bold orange]Ag3ntX: Updating Todo:[/bold orange] ")
+    status_text.append(str(f"{todo.title} as {status}"))
     return status_text

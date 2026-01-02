@@ -71,4 +71,4 @@ def display_glob(
 ) -> str:
     """Generates a human-readable summary of the glob action."""
     cwd = path or settings.present_test_directory
-    return f'Globbing {pattern} in directory: {cwd} excluding directories: {exclude_dirs or []}s'
+    return f'Globbing {pattern} in directory: {cwd} excluding directories: {exclude_dirs or []}'

@@ -98,9 +98,9 @@ async def read_file(
 def display_read_file(file_path: str, limit: Optional[int] = None, offset: Optional[int] = None) -> str:
     """Generates a human-readable summary of the read_file action."""
     if limit is not None and offset is not None:
-        return f'Reading File {file_path}:{offset + 1}:{offset + limit}'
+        return f'Read File {file_path}:{offset + 1}:{offset + limit}'
     else:
-        return f'Reading File {file_path}'
+        return f'Read File {file_path}'
 
 def get_read_file_tool_output(data: EventData) -> Syntax:
     output = data['output']

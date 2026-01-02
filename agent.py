@@ -139,7 +139,7 @@ async def main():
             try:
                 with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True) as live:
                     # Show initial thinking spinner
-                    live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Thinking...[/]"))
+                    live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
                     
                     async for event in agent.astream_events({
                         "messages": messages
@@ -155,12 +155,12 @@ async def main():
                                     if isinstance(content, list):
                                         content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
                                     accumulated_content += content
-                                    live.update(Markdown(f"[{settings.theme_color}] {accumulated_content}[/]"))
+                                    live.update(Markdown(f"Ag3ntX: {accumulated_content}"))
                                     
                         elif kind == "on_tool_start":
                             # Flush current AI content before showing tool start
                             if accumulated_content:
-                                live.console.print(Markdown(f"[bold {settings.ai_color}]**AI:** {accumulated_content}"))
+                                live.console.print(Markdown(f"Ag3ntX: {accumulated_content}"))
                                 accumulated_content = ""
                             
                             name = event["name"]
@@ -192,17 +192,17 @@ async def main():
                                 summary = f"Running tool: {name} (formatting error: {e})"
                             
                             if isinstance(summary, str):
-                                status_text = Text.from_markup(f"[bold {settings.theme_color}]{summary}:[/] ")
+                                status_text = Text.from_markup(f"[bold {settings.theme_color}]Ag3ntX: {summary}:[/] ")
                                 live.console.print(status_text)
                                 # Show spinner while tool is working
-                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Waiting for tool...[/]"))
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Waiting for tool...[/]"))
                             else:
                                 live.console.print(summary) 
-                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Waiting for tool...[/]"))
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Waiting for tool...[/]"))
 
                         elif kind == "on_tool_end":
                             if accumulated_content:
-                                live.console.print(Markdown(f"**AI:** {accumulated_content}"))  # ty:ignore[unresolved-reference]
+                                live.console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))  # ty:ignore[unresolved-reference]
                                 accumulated_content = ""
                                 
                             name = event["name"]
@@ -220,7 +220,7 @@ async def main():
                                     #     live.console.print(output_summary)
                                 
                                 # Show spinner while model thinks about the tool output
-                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Thinking...[/]"))
+                                live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
                         
                         elif kind == "on_chain_end":
                             if not data.get("parent_ids"):
@@ -236,7 +236,7 @@ async def main():
 
             # Print the final accumulated AI content permanently
             if accumulated_content:
-                console.print(Markdown(f"**AI:** {accumulated_content}"))
+                console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))
             console.print()  # Newline
             
             # Update history safely

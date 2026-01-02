@@ -216,4 +216,4 @@ def display_bash(
     working_directory: Optional[str] = None,
 ) -> str:
     """Generates a human-readable summary of the bash action."""
-    return f'Executing Bash Command: {command} (Description: {description})'
+    return f'{description}: Bash {command}'
