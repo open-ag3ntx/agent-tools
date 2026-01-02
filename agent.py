@@ -44,6 +44,7 @@ except ImportError:
     HAS_TERMIOS = False
 
 
+import select
 load_dotenv()
 
 console = Console()
@@ -73,6 +74,24 @@ def print_banner():
     )
     console.print(panel)
     console.print()  # Newline
+
+def check_for_esc():
+    """Check if Esc key was pressed without blocking."""
+    if not HAS_TERMIOS:
+        return False
+    
+    # Check if there's data to read on stdin
+    dr, _, _ = select.select([sys.stdin], [], [], 0)
+    if dr:
+        try:
+            # Read the key
+            char = sys.stdin.read(1)
+            # \x1b is the escape character
+            if char == '\x1b':
+                return True
+        except:
+            pass
+    return False
 
 
 
@@ -170,13 +189,23 @@ async def main():
                 termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
 
             try:
-                with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True) as live:
+                with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True, vertical_overflow="crop") as live:
                     # Show initial thinking spinner
-                    live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
+                    live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/] (Press Esc to Stop)"))
                     
+                    # Set terminal to non-canonical mode to read single keys without waiting for Enter
+                    if HAS_TERMIOS:
+                        tty.setcbreak(fd)
+
+                    interrupted = False
                     async for event in agent.astream_events({
                         "messages": messages
                     }, version="v2", config={"recursion_limit": 100}):
+                        # Check for Esc key press
+                        if check_for_esc():
+                            interrupted = True
+                            break
+
                         kind = event["event"]
                         data = event["data"]
                         
@@ -262,6 +291,9 @@ async def main():
                                     cand_messages = output["messages"]
                                     if isinstance(cand_messages, list) and len(cand_messages) > len(messages):
                                         final_messages = cand_messages
+                    
+                    if interrupted:
+                        live.console.print(f"[bold red]Interrupted by user (Esc pressed).[/]")
             finally:
                 # Restore terminal settings
                 if HAS_TERMIOS and old_settings:
