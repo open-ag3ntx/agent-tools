@@ -1,3 +1,4 @@
+from prompt_toolkit.keys import Keys
 from asyncio.exceptions import CancelledError
 from packaging.utils import _
 from langchain_core.runnables.schema import EventData
@@ -20,12 +21,16 @@ from rich.markdown import Markdown
 from rich.console import Console, Group
 from rich.text import Text
 from rich.spinner import Spinner
+from rich.panel import Panel
+from rich.align import Align
 from base.settings import settings
 from llm_client.client import client as llm_client
 from file_system.tools.read_file import display_read_file, get_read_file_tool_output
 from file_system.tools.write_file import display_write_file
 from file_system.tools.edit_file import display_edit_file
 from langchain_core.load import loads, dumps
+from prompt_toolkit import PromptSession
+from prompt_toolkit.key_binding import KeyBindings
 import asyncio
 import sys
 
@@ -42,6 +47,33 @@ except ImportError:
 load_dotenv()
 
 console = Console()
+
+BANNER = """
+
+ █████╗  ██████╗ ██████╗ ███╗   ██╗████████╗██╗  ██╗
+██╔══██╗██╔════╝ ╚════██╗████╗  ██║╚══██╔══╝╚██╗██╔╝
+███████║██║  ███╗ █████╔╝██╔██╗ ██║   ██║    ╚███╔╝ 
+██╔══██║██║   ██║ ╚═══██╗██║╚██╗██║   ██║    ██╔██╗ 
+██║  ██║╚██████╔╝██████╔╝██║ ╚████║   ██║   ██╔╝ ██╗
+╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝
+
+"""
+
+def print_banner():
+    banner_text = Text(BANNER, style=f"bold {settings.theme_color}")
+    panel = Panel(
+        banner_text,
+        expand=False,
+        border_style=settings.theme_color,
+        padding=(1, 2),
+        title="[bold white]v1.0.0[/]",
+        title_align="right",
+        subtitle="[bold white]Coding Agent[/]",
+        subtitle_align="left",
+    )
+    console.print(panel)
+    console.print()  # Newline
+
 
 
 def create_prompt():
@@ -74,42 +106,43 @@ agent = create_agent(
 )
 
 
-def get_multiline_input(prompt: str = "You: ") -> str:
+async def get_multiline_input(prompt: str = "You: ") -> str:
     """
-    Get multiline input from user.
-    - Single line: type and press Enter
-    - Multiple lines: keep typing, press Enter twice (empty line) to submit
+    Get input from user.
+    - Enter: Submit
+    - Shift+Enter: Newline
     """
-    console.print(prompt, end="")
-    lines = []
+    kb = KeyBindings()
+
+    @kb.add(Keys.Escape, Keys.Enter)  # Alt+Enter in iTerm2
+    def _(event):
+        """Submit on Alt+Enter"""
+        event.current_buffer.insert_text('\n')
+
+
+    @kb.add('enter')
+    def _(event):
+        # Enter to submit
+        event.current_buffer.validate_and_handle()
+
     
-    while True:
-        try:
-            line = input()
-        except EOFError:
-            break
-        
-        # Empty line with existing content = submit
-        if not line and lines:
-            break
-        
-        # Empty line with no content = keep waiting
-        if not line and not lines:
-            continue
-        
-        lines.append(line)
-    
-    return "\n".join(lines)
+    session = PromptSession(key_bindings=kb)
+    try:
+        # Use multiline=True to allow newlines, but our keybinding for 'enter' 
+        # will handle submission.
+        text = await session.prompt_async(prompt, multiline=True)
+        return text.strip()
+    except (EOFError, KeyboardInterrupt):
+        return "exit"
 
 
 async def main():
-    console.print("AI Coding Agent Ready. Type 'exit' to quit.\n")
-    
+    print_banner()
     messages = []
     
     while True:
         try:
-            user_input = get_multiline_input("You: ")
+            user_input = await get_multiline_input("You: ")
             if user_input.lower() == "exit":
                 console.print("Goodbye!")
                 break
