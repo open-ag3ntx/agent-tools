@@ -190,10 +190,8 @@ async def main():
 
             try:
                 with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True, vertical_overflow="crop") as live:
-                    # Show initial thinking spinner
                     live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/] (Press Esc to Stop)"))
                     
-                    # Set terminal to non-canonical mode to read single keys without waiting for Enter
                     if HAS_TERMIOS:
                         tty.setcbreak(fd)
 
@@ -201,7 +199,6 @@ async def main():
                     async for event in agent.astream_events({
                         "messages": messages
                     }, version="v2", config={"recursion_limit": 100}):
-                        # Check for Esc key press
                         if check_for_esc():
                             interrupted = True
                             break
@@ -308,10 +305,7 @@ async def main():
             if final_messages:
                 messages = final_messages
             else:
-                # If we failed to capture the full state, we rely on manual append.
-                # WARNING: This is lossy if tool calls happened, as we validly need the ToolMessages 
-                # and the AIMessage with tool_calls set.
-                # But it's better than crashing or losing the text response.
+             
                 if accumulated_content:
                     messages.append(AIMessage(content=accumulated_content))
             
