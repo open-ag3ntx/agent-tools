@@ -278,7 +278,6 @@ async def main():
                                     # if output_summary:
                                     #     live.console.print(output_summary)
                                 
-                                # Show spinner while model thinks about the tool output
                                 live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
                         
                         elif kind == "on_chain_end":
@@ -296,12 +295,10 @@ async def main():
                 if HAS_TERMIOS and old_settings:
                     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-            # Print the final accumulated AI content permanently
             if accumulated_content:
                 console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))
             console.print()  # Newline
             
-            # Update history safely
             if final_messages:
                 messages = final_messages
             else:
