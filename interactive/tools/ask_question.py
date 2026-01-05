@@ -24,9 +24,6 @@ async def ask_question(
 
     for question in questions:
         print("================================= User Question =================================")
-        print(f"Header: {question.header}")
-        print(f"Question: {question.question}")
-        print("Options:")
         for idx, option in enumerate(question.options):
             print(f"  {idx + 1}. {option.label} - {option.description}")
         if question.multi_select:
