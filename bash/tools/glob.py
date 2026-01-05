@@ -47,6 +47,7 @@ async def glob(
         files = sorted(files, key=lambda x: x.stat().st_mtime, reverse=True)
         files = [str(file) for file in files if all(excl not in file.parts for excl in exclude_dirs)]
         # TODO filter outl files based on gitignore
+        
         total = len(files)
         skipped = 0  # Placeholder for future skipped files count based on gitignore
 
