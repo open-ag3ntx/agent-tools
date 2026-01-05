@@ -27,39 +27,43 @@ cp .env.example .env
 
 ## Available Tools
 
-| Tool | Description | Status |
-|------|-------------|--------|
-| [Todo Manager](./todo/) | Track progress during multi-step agent tasks | ✅ Ready |
+| Category | Tools | Description | Status |
+|----------|-------|-------------|--------|
+| [**Bash & Shell**](./bash/) | `bash`, `glob`, `grep` | Execute shell commands and perform advanced searches | ✅ Ready |
+| [**File System**](./file_system/) | `read_file`, `write_file`, `edit_file` | Robust file manipulation with safety checks | ✅ Ready |
+| [**Todo Manager**](./todo/) | `create_todo`, `list_todos`, `update_todo` | Track progress during multi-step agent tasks | ✅ Ready |
+| [**Interactive**](./interactive/) | `ask_question` | Human-in-the-loop interaction for clarifying questions | ✅ Ready |
+| [**Subagents**](./subagents/) | `subagent` | Delegate complex tasks to specialized sub-agents | ✅ Ready |
+| [**Skills**](./skills/) | - | Extensible framework for adding custom capabilities | 🚧 Beta |
 
 ## Usage
 
-### Using the Todo Tools
+### Using the Tools
+
+The tools are designed to be used with LangChain or LangGraph agents. Here's how to initialize a basic agent with our tool collection:
 
 ```python
-from langchain.agents import create_agent
-from langchain_google_genai import ChatGoogleGenerativeAI
+from base.models import ToolCollection
+from bash.tools import BASH_TOOLS
+from file_system.tools import FILE_SYSTEM_TOOLS
 from todo.tools import TODO_TOOLS
 
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+# Combine toolsets
+all_tools = BASH_TOOLS + FILE_SYSTEM_TOOLS + TODO_TOOLS
 
-agent = create_agent(
-    model=model,
-    tools=TODO_TOOLS,
-    system_prompt=open("todo/prompt.md").read()
-)
-
-for chunk in agent.stream({
-    "messages": [("user", "Build a Next.js app with Tailwind")]
-}, stream_mode="values"):
-    chunk["messages"][-1].pretty_print()
+# Or use the ToolCollection to load everything
+# collection = ToolCollection().load_all()
 ```
 
-### Available Todo Operations
-
-- `create_todo(title, task_group)` - Create a trackable task
-- `list_todos(task_group)` - View all tasks in a group
-- `update_todo(task_group, todo_id, status)` - Mark as completed/cancelled
-- `delete_todo(task_group, todo_id)` - Remove a task
+### Example: File Editing
+```python
+# The agent can intelligently edit files instead of rewriting them
+edit_file(
+    file_path="/path/to/script.py",
+    old_content="def old_func():\n    pass",
+    new_content="def new_func():\n    print('Hello World')",
+)
+```
 
 ## Contributing
 
@@ -134,20 +138,14 @@ We welcome contributions! Here's how to add your own tools:
 
 ```
 agent-tools/
-├── README.md
-├── .env.example
-├── .gitignore
-├── todo/                    # Todo management tools
-│   ├── __init__.py
-│   ├── agent.py            # Example agent implementation
-│   ├── tools.py            # Tool definitions
-│   ├── prompt.md           # System prompt
-│   └── requirements.txt    # Dependencies
-└── your_tool/              # Your contribution here!
-    ├── __init__.py
-    ├── tools.py
-    ├── prompt.md
-    └── requirements.txt
+├── agent.py            # Example agent implementation
+├── base/               # Shared base classes and utilities
+├── bash/               # Shell execution & search tools (grep, glob)
+├── file_system/        # File I/O and targeted editing tools
+├── interactive/        # Human-in-the-loop interaction tools
+├── skills/             # Reusable agent skill modules
+├── subagents/          # Sub-agent delegation tools
+└── todo/               # Multi-step task tracking tools
 ```
 
 ## Environment Variables
