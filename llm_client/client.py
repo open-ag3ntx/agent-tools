@@ -4,6 +4,7 @@ from typing import Annotated
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
+from langchain_anthropic import ChatAnthropic
 
 from file_system.tools import read_file, edit_file, write_file
 from todo.tools import list_todos, update_todo, create_todo
@@ -40,6 +41,17 @@ class LLMClient:
         elif model_provider == "ollama":
             self.__llm = ChatOllama(
                 model=model
+            )
+        elif model_provider == "deepseek":
+            self.__llm = ChatOpenAI(
+                model=model,
+                api_key=os.getenv("DEEPSEEK_API_KEY"),
+                base_url="https://api.deepseek.com/v1",
+            )
+        elif model_provider == "anthropic":
+            self.__llm = ChatAnthropic(
+                model=model,
+                api_key=os.getenv("ANTHROPIC_API_KEY"),
             )
         else:
             raise ValueError("Unsupported model provider")
