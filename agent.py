@@ -1,3 +1,4 @@
+from typing import Any
 from prompt_toolkit.keys import Keys
 from asyncio.exceptions import CancelledError
 from packaging.utils import _
@@ -174,13 +175,9 @@ async def main():
             accumulated_content = ""
             current_tool_input = ""
             
-            # Track the final state to update messages at the end
             final_messages = None
             
-            # transients=True is crucial to prevent "ghosting" of the live display when input starts
-            
-            # Suppress terminal echo if possible
-            fd = sys.stdin.fileno()
+            fd: int | Any = sys.stdin.fileno()
             old_settings = None
             if HAS_TERMIOS:
                 old_settings = termios.tcgetattr(fd)
