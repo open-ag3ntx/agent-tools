@@ -53,6 +53,11 @@ class LLMClient:
                 model=model,
                 api_key=os.getenv("ANTHROPIC_API_KEY"),
             )
+        elif model_provider == "openai":
+            self.__llm = ChatOpenAI(
+                model=model,
+                api_key=os.getenv("OPENAI_API_KEY"),
+            )
         else:
             raise ValueError("Unsupported model provider")
         logger.info(f'Initilised LLMClient with provider {model_provider} model {model}')
