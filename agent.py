@@ -200,7 +200,7 @@ async def main():
                             interrupted = True
                             break
 
-                        kind = event["event"]
+                        kind: str = event["event"]
                         data = event["data"]
                         
                         if kind == "on_chat_model_stream":
