@@ -23,12 +23,6 @@ async def ask_question(
     """
 
     for question in questions:
-        print("================================= User Question =================================")
-        for idx, option in enumerate(question.options):
-            print(f"  {idx + 1}. {option.label} - {option.description}")
-        if question.multi_select:
-            print("  You may select multiple options (comma separated).")
-        print("  0. Other - Provide a custom answer.")
         chosen = input("Please enter the number(s) of your choice: ")
         chosen_indices = [int(x.strip()) for x in chosen.split(",") if x.strip().isdigit()]
         answers = {}
