@@ -148,8 +148,6 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
     
     session = PromptSession(key_bindings=kb)
     try:
-        # Use multiline=True to allow newlines, but our keybinding for 'enter' 
-        # will handle submission.
         text = await session.prompt_async(prompt, multiline=True)
         return text.strip()
     except (EOFError, KeyboardInterrupt):
