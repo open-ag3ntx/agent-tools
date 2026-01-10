@@ -212,7 +212,6 @@ async def main():
                                     live.update(Markdown(f"Ag3ntX: {accumulated_content}"))
                                     
                         elif kind == "on_tool_start":
-                            # Flush current AI content before showing tool start
                             if accumulated_content:
                                 live.console.print(Markdown(f"Ag3ntX: {accumulated_content}"))
                                 accumulated_content = ""
@@ -248,7 +247,6 @@ async def main():
                             if isinstance(summary, str):
                                 status_text = Text.from_markup(f"[bold {settings.theme_color}]Ag3ntX: {summary}:[/] ")
                                 live.console.print(status_text)
-                                # Show spinner while tool is working
                                 live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Waiting for tool...[/]"))
                             else:
                                 live.console.print(summary) 
