@@ -26,6 +26,9 @@ class TestUpdateTodo:
         assert "successfully" in result.lower()
         assert todo_store["project"][1].status == "completed"
 
+
+
+
     def test_update_todo_to_cancelled(self):
         """Should update todo status to cancelled."""
         create_todo.invoke({"titles": ["Task"], "task_group": "project"})
