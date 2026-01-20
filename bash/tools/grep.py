@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Optional
 from base.models import GrepToolResult
 from base.settings import settings
 
-
+# check how many times grep is called
 async def grep(
     pattern: Annotated[str, "The regular expression pattern to search for in file contents"],
     path: Annotated[Optional[str], "File or directory to search in (rg PATH). Defaults to current working directory."] = None,
