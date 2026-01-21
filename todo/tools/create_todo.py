@@ -64,8 +64,8 @@ def display_create_todo(
     task_group: str,
 ) -> Panel:
     """Best UX: Clean table in a panel with summary."""
-    table = Table(show_header=False, box=None, padding=(0, 1))  # Changed from (0, 0) to (0, 1)
-    table.add_column("Status", justify="left", width=2)  # Changed from width=0 to width=2
+    table = Table(show_header=False, box=None, padding=(0, 1))
+    table.add_column("Status", justify="left", width=2)
     table.add_column("Task")
 
     for i, todo in enumerate(titles, 1):
@@ -75,5 +75,5 @@ def display_create_todo(
         table,
         title=f"[bold {settings.ai_color}]✓ Created {len(titles)} todos in '{task_group}'[/bold {settings.ai_color}]",
         border_style=settings.theme_color,
-        padding=(1, 2)  # Changed from (0, 1) to (1, 2) for better spacing
+        padding=(1, 2)
     )
