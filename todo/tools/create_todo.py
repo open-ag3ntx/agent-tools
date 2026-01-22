@@ -77,3 +77,13 @@ def display_create_todo(
         border_style=settings.theme_color,
         padding=(1, 2)
     )
+
+db.ServiceInfos.find({uuid: null}).forEach(function(doc) {
+  db.ServiceInfos.updateOne(
+    { _id: doc._id },
+    { $set: { uuid: UUID().toString() } }
+  );
+});
+
+
+INT-Orion Security, EXT-National Institutes of Health, INT-Omerlo, EXT-FortisAlberta, CTO, SPITHelpDesk, Arctiq SKO 2025, INT-Prairie Valley School Division, rs_SOC-All, INT-Brown-Forman, Organization Management, ben_AP, AllHands, EXT-City of Mission Viejo, rs_rsoltester02, INT-Campbell & Haliburton Insurance Ltd., INT-Sherwood Electromotion, INT-Taseko Mines, INT-Conroe-ISD, INT-Canada Life, INT-NYC Department of Social Services, INT - British Columbia Infrastructure Benefits, EXT-BCTransit, PMO, rs_Regina BoardRoom, rs_SOC Operations, CDTA Shared Customer Team, INT-The Centre for Addiction and Mental Health (CAMH), ben_Zoom, INT-NYS UnitedTeachers, ben_Benchmark One, Manulife Virtualization Software, Sysxsense Admin Updates, ben_Benchmark Azure, EXT-Rockpoint Gas Storage, INT-University Pension Plan, INT-Reliance Comfort Limited Partnership, INT-P97 Networks, INT-City of Greeley, INT-CLS Catering, INT-Rockford Engineering Works Ltd., INT-Elastic Path Software Inc, INT-UV Assurance, WebEx-SSO, EXT-Unique Communication, INT-Maple Leaf Foods, INT-VIA Rail, iOS Devices, INT-Viterra Inc, INT-Onteora Central School District, ben_GitHub Partnership, INT-Thunder Bay Hospital, INT-Everi Payments Inc., rs_rsolsiteadmin1, INT-Valley Electric Association, ben_Consulting, INT-CNOOC, INT-Carson City, Hamilton County Contacts, INT-Providence Health Care- Foundry IT, TP Defender Test Group Devices, INT-ShawnTest, INT-University ofTennessee, Knoxville, INT-BBL Construction, INT-Legal Aid Center of Southern Nevada, Inc, EXT-Hartnell College, INT-TVO, INT-Phillipsburg School District, INT-Professional Engineers Ontario, sum_City of Sparks, INT-City of Calgary, AzureSentinel-MSSP-Contributer, INT-Dynacare, INT-Associated Engineering, M365-Business Premium IUR Licensing, SPContVehicles, INT-NYS Attorney Generals Office, rs_WawanesaAlerts, ben_Michaels United, INT-EDC, Microsoft, INT-Shared Services West, INT-Hospital for Sick Kids, EXT-BC Securities, INT-Orange Public Schools, INT-Vendasta, efax.irv.hr, LV Project Mgmt, rs_SOC Reporting, AppAccessPolicy-CWManage, CodeTwo-DynTek-Cloud, RemoteApps-QuoteWerks Access, CyberRisk Team, SCC-Admin, INT-Adventist Health System/West, HHC Kings County Hospital, INT-M&T Bank, NSAdmin, Migration Staging, INT-Arctiq Internal Projects
