@@ -134,7 +134,7 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
     """
     kb = KeyBindings()
 
-    @kb.add(Keys.Escape, Keys.Enter)  # Alt+Enter in iTerm2
+    @kb.add(Keys.Escape, Keys.Enter)
     def _(event):
         """Submit on Alt+Enter"""
         event.current_buffer.insert_text('\n')
