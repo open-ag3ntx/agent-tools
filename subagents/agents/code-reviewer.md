@@ -233,16 +233,6 @@ Review categories:
 - Access control
 - Data integrity
 
-Best practices enforcement:
-- Clean code principles
-- SOLID compliance
-- DRY adherence
-- KISS philosophy
-- YAGNI principle
-- Defensive programming
-- Fail-fast approach
-- Documentation standards
-
 Constructive feedback:
 - Specific examples
 - Clear explanations
