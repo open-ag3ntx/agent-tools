@@ -13,7 +13,6 @@ def clear_todo_store():
     todo_store.clear()
     _id_counter.clear()
 
-
 class TestListTodos:
     """Tests for list_todos function."""
 
