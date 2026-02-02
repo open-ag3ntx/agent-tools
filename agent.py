@@ -262,15 +262,6 @@ async def main():
                             
                             if tool_output:
                                 output_summary = None
-                                    # match name:
-                                    #     case "read_file":
-                                    #         output_summary = get_read_file_tool_output(data)
-                                    #     case _:
-                                    #         pass
-                                    
-                                    # if output_summary:
-                                    #     live.console.print(output_summary)
-                                
                                 live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
                         
                         elif kind == "on_chain_end":
