@@ -256,7 +256,6 @@ async def main():
                             if accumulated_content:
                                 live.console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))  # ty:ignore[unresolved-reference]
                                 accumulated_content = ""
-                                
                             name = event["name"]
                             tool_output = data.get("output")
                             
