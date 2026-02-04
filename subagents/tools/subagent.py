@@ -4,6 +4,7 @@ from langchain.agents import create_agent
 
 
 async def subagent(
+    subagent_type: Annotated[str, "The type of agent to launch, which determines the tools and capabilities it has access to. For example, a 'code-reviewer' agent would have access to code analysis tools and would be expected to review code, while a 'greeting-responder' agent would have access to a joke database and would be expected to respond to greetings with jokes."],
     description: Annotated[str, "A short (3-5 word) description of the task the"],
     prompt: Annotated[str, "The task for the agent to perform autonomously"],
 ) -> str:
