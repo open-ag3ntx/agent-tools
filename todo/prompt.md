@@ -31,11 +31,9 @@ Create all todos BEFORE starting work
 Update todos IMMEDIATELY after completing each step
 Use clear, action-oriented titles ("Set up Tailwind CSS" not "Tailwind")
 Use consistent task_group names for related todo
-
 Don't skip todo creation for multi-step tasks
 Don't forget to update todos as you progress
 Don't use delete for marking work done (use update_todo instead)
-
 ## Example
 
 **Task**: Build and deploy a Next.js app
