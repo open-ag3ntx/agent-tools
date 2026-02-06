@@ -48,5 +48,4 @@ Don't use delete for marking work done (use update_todo instead)
 
 3. List todos to verify all are completed
 ```
-
 Use todos to stay organized and ensure no steps are missed in complex task_groups.
