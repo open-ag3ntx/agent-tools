@@ -26,7 +26,6 @@ Use todos for any task with 3+ steps or tasks that take significant time to comp
 - `delete_todo(task_group, title)` - Only for correcting mistakes
 
 ## Key Rules
-
 Create all todos BEFORE starting work
 Update todos IMMEDIATELY after completing each step
 Use clear, action-oriented titles ("Set up Tailwind CSS" not "Tailwind")
