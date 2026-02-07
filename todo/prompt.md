@@ -43,7 +43,6 @@ Don't use delete for marking work done (use update_todo instead)
    - "Configure Tailwind and shadcn/ui"
    - "Build app features"
    - "Deploy to Vercel"
-
 2. Execute each step, updating status after completion
 
 3. List todos to verify all are completed
