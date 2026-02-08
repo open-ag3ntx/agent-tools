@@ -36,7 +36,6 @@ Don't use delete for marking work done (use update_todo instead)
 ## Example
 
 **Task**: Build and deploy a Next.js app
-
 ```
 1. Create todos:
    - "Initialize Next.js project"
