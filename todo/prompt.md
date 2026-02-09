@@ -43,7 +43,6 @@ Don't use delete for marking work done (use update_todo instead)
    - "Build app features"
    - "Deploy to Vercel"
 2. Execute each step, updating status after completion
-
 3. List todos to verify all are completed
 ```
 Use todos to stay organized and ensure no steps are missed in complex task_groups.
