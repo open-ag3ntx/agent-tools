@@ -63,7 +63,7 @@ async def subagent(
     llm = client.get_new_instance()
     subagent_tools = []
     subagent_tools.extend(client.get_file_system_tools())
-    subagent_tools.extend(client.get_todo_tools())
+    # subagent_tools.extend(client.get_todo_tools())
     subagent_tools.extend(client.get_bash_tools())
     subagent_tools.extend(client.get_interactive_tools())
 

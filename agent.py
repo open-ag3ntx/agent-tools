@@ -110,7 +110,7 @@ def create_prompt():
 
 tools = [
     *llm_client.get_file_system_tools(),
-    *llm_client.get_todo_tools(),
+    # *llm_client.get_todo_tools(),
     *llm_client.get_bash_tools(),
     *llm_client.get_interactive_tools(),
     *llm_client.get_subagent_tool(),
