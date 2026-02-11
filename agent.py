@@ -125,7 +125,6 @@ agent = create_agent(
     system_prompt=create_prompt(),
 )
 
-
 async def get_multiline_input(prompt: str = "You: ") -> str:
     """
     Get input from user.
@@ -145,7 +144,6 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
         # Enter to submit
         event.current_buffer.validate_and_handle()
 
-    
     session = PromptSession(key_bindings=kb)
     try:
         text = await session.prompt_async(prompt, multiline=True)
