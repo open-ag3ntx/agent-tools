@@ -141,7 +141,6 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
 
     @kb.add('enter')
     def _(event):
-        # Enter to submit
         event.current_buffer.validate_and_handle()
     session = PromptSession(key_bindings=kb)
     try:
