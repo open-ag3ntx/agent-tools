@@ -138,7 +138,6 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
         """Submit on Alt+Enter"""
         event.current_buffer.insert_text('\n')
 
-
     @kb.add('enter')
     def _(event):
         event.current_buffer.validate_and_handle()
