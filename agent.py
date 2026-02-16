@@ -269,18 +269,14 @@ async def main():
                     if interrupted:
                         live.console.print(f"[bold red]Interrupted by user (Esc pressed).[/]")
             finally:
-                # Restore terminal settings
                 if HAS_TERMIOS and old_settings:
                     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
             if accumulated_content:
                 console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))
             console.print()  # Newline
-            
             if final_messages:
                 messages = final_messages
             else:
-             
                 if accumulated_content:
                     messages.append(AIMessage(content=accumulated_content))
             
