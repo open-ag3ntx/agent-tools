@@ -253,11 +253,9 @@ async def main():
                                 accumulated_content = ""
                             name = event["name"]
                             tool_output = data.get("output")
-                            
                             if tool_output:
                                 output_summary = None
                                 live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/]"))
-                        
                         elif kind == "on_chain_end":
                             if not data.get("parent_ids"):
                                 output = data.get("output")
