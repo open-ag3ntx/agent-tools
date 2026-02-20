@@ -246,7 +246,6 @@ async def main():
                             else:
                                 live.console.print(summary) 
                                 live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Waiting for tool...[/]"))
-
                         elif kind == "on_tool_end":
                             if accumulated_content:
                                 live.console.print(Markdown(f"**Ag3ntX:** {accumulated_content}"))  # ty:ignore[unresolved-reference]
