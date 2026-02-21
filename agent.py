@@ -238,7 +238,6 @@ async def main():
                                         summary = display_list_todos(**data.get('input', {}))
                             except Exception as e:
                                 summary = f"Running tool: {name} (formatting error: {e})"
-                            
                             if isinstance(summary, str):
                                 status_text = Text.from_markup(f"[bold {settings.theme_color}]Ag3ntX: {summary}:[/] ")
                                 live.console.print(status_text)
