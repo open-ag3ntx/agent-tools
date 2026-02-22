@@ -210,7 +210,6 @@ async def main():
                             if accumulated_content:
                                 live.console.print(Markdown(f"Ag3ntX: {accumulated_content}"))
                                 accumulated_content = ""
-                            
                             name = event["name"]
                             summary = f"Running tool: {name}"
                             try:
