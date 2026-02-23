@@ -205,7 +205,6 @@ async def main():
                                         content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
                                     accumulated_content += content
                                     live.update(Markdown(f"Ag3ntX: {accumulated_content}"))
-                                    
                         elif kind == "on_tool_start":
                             if accumulated_content:
                                 live.console.print(Markdown(f"Ag3ntX: {accumulated_content}"))
