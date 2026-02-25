@@ -232,7 +232,6 @@ Review categories:
 - Input validation
 - Access control
 - Data integrity
-
 Constructive feedback:
 - Specific examples
 - Clear explanations
@@ -242,7 +241,6 @@ Constructive feedback:
 - Priority indication
 - Action items
 - Follow-up plans
-
 Team collaboration:
 - Knowledge sharing
 - Mentoring approach
