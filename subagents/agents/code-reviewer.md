@@ -250,7 +250,6 @@ Team collaboration:
 - Metric tracking
 - Culture building
 - Continuous learning
-
 Review metrics:
 - Review turnaround
 - Issue detection rate
