@@ -10,7 +10,6 @@ __skills: list[dict] = []
 def __call_skill(
     skill_name: Annotated[str, "The name of the skill to be called"],
 ) -> SkillToolResponse:
-    
     skill = next((s for s in __skills if s.get('name') == skill_name), None)
     if not skill:   
         return SkillToolResponse(
@@ -40,6 +39,8 @@ def __call_skill(
         scripts=scripts,
         assets=assets
     )
+
+
 
 def __extract_front_matter(file_path) -> dict | None:
     """Extract YAML front matter from markdown file."""
