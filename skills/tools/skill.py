@@ -39,9 +39,7 @@ def __call_skill(
         scripts=scripts,
         assets=assets
     )
-
-
-
+    
 def __extract_front_matter(file_path) -> dict | None:
     """Extract YAML front matter from markdown file."""
     with open(file_path, 'r', encoding='utf-8-sig') as f:
