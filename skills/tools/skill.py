@@ -90,7 +90,6 @@ def __get_skill_tool_description(skills: list[dict]) -> str:
     """
     return description
 
-
 def setup_skills_tool() -> StructuredTool:
     skills: list[dict] = []
     for d in os.listdir(settings.default_skills_directory):
