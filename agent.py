@@ -177,7 +177,6 @@ async def main():
                 new_settings = termios.tcgetattr(fd)
                 new_settings[3] = new_settings[3] & ~termios.ECHO
                 termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
-
             try:
                 with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True, vertical_overflow="crop") as live:
                     live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/] (Press Esc to Stop)"))
