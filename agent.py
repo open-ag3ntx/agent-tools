@@ -183,7 +183,6 @@ async def main():
                     
                     if HAS_TERMIOS:
                         tty.setcbreak(fd)
-
                     interrupted = False
                     async for event in agent.astream_events({
                         "messages": messages
