@@ -30,3 +30,7 @@ else:
         word_wrap=False
     )
     console.print(syntax)
+
+
+
+    

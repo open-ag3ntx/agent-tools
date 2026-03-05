@@ -180,7 +180,6 @@ async def main():
             try:
                 with Live(console=console, refresh_per_second=20, auto_refresh=True, transient=True, vertical_overflow="crop") as live:
                     live.update(Spinner("dots", text=f"[bold {settings.theme_color}]Ag3ntX: Thinking...[/] (Press Esc to Stop)"))
-                    
                     if HAS_TERMIOS:
                         tty.setcbreak(fd)
                     interrupted = False
