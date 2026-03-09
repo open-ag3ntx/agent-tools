@@ -2,7 +2,6 @@ from typing import Annotated
 from langchain.messages import SystemMessage
 from langchain.agents import create_agent
 
-
 async def subagent(
     subagent_type: Annotated[str, "The type of agent to launch, which determines the tools and capabilities it has access to. For example, a 'code-reviewer' agent would have access to code analysis tools and would be expected to review code, while a 'greeting-responder' agent would have access to a joke database and would be expected to respond to greetings with jokes."],
     description: Annotated[str, "A short (3-5 word) description of the task the"],
@@ -18,7 +17,6 @@ async def subagent(
     - If you are searching for a specific class definition like \"class Foo\", use the Glob tool instead, to find the match more quickly
     - If you are searching for code within a specific file or set of 2-3 files, use the Read tool instead of the Task tool, to find the match more quickly
     - Other tasks that are not related to the agent descriptions above
-
 
     Usage notes:
     - Launch multiple agents concurrently whenever possible, to maximize performance; to do that, use a single message with multiple tool uses
@@ -89,6 +87,4 @@ async def subagent(
         },
         config=config
     )
-
     return result['messages'][-1].content
-
