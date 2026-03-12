@@ -16,10 +16,8 @@ cd agent-tools
 # Create virtual environment with uv
 uv venv
 source .venv/bin/activate
-
 # Install dependencies
 uv pip install -r todo/requirements.txt
-
 # Set up environment variables
 cp .env.example .env
 # Add your API keys to .env
