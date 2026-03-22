@@ -70,7 +70,6 @@ async def subagent(
             Your goal is to complete the task assigned to you as effectively as possible using the available tools.
             When you are done, return the result of your task so main agent can act on it.
         """
-
     )
     config = {"configurable": {"thread_id": "1"}} 
     
