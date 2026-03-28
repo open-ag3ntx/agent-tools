@@ -58,7 +58,6 @@ def __extract_front_matter(file_path) -> dict | None:
     
     return None
 
-
 def __get_skill_tool_description(skills: list[dict]) -> str:
     description = f"""
         Execute a skill within the main conversation
