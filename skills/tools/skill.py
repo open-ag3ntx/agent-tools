@@ -61,7 +61,6 @@ def __extract_front_matter(file_path) -> dict | None:
 def __get_skill_tool_description(skills: list[dict]) -> str:
     description = f"""
         Execute a skill within the main conversation
-
         <skills_instructions>
         When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively. Skills provide specialized capabilities and domain knowledge.
 
