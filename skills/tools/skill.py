@@ -72,7 +72,6 @@ def __get_skill_tool_description(skills: list[dict]) -> str:
         - `skill: pdf` - invoke the pdf skill
         - `skill: xlsx` - invoke the xlsx skill
         - `skill: ms-office-suite:pdf` - invoke using fully qualified name
-
         Important:
         - Only use skills listed in <available_skills> below
         - Do not invoke a skill that is already running
