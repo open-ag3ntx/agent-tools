@@ -148,7 +148,6 @@ async def get_multiline_input(prompt: str = "You: ") -> str:
     except (EOFError, KeyboardInterrupt):
         return "exit"
 
-
 async def main():
     print_banner()
     messages = []
