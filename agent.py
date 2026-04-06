@@ -116,15 +116,12 @@ tools = [
     *llm_client.get_subagent_tool(),
     *llm_client.get_skill_tool(),
 ]
-
 llm = llm_client.get_new_instance()
-
 agent = create_agent(
     model=llm,
     tools=tools,
     system_prompt=create_prompt(),
 )
-
 async def get_multiline_input(prompt: str = "You: ") -> str:
     """
     Get input from user.
